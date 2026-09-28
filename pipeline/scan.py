@@ -175,7 +175,9 @@ def main(argv=None):
             (log.info if freed else log.debug)("prune", **{k: v for k, v in pruned.items() if k != "at"})
             alerts = memory.pending("alert")
 
-        recent = memory.recent_alerts()
+        use_jev = jev.enabled()
+        # Jev judges repeats by meaning, so it can afford to look back a week instead of 48 hours
+        recent = memory.recent_alerts(hours=168 if use_jev else 48)
         kept_alerts, repeat_ids, stale_ids, sold_ids, demoted = [], [], [], [], []
         held = {h.code for h in cfg.holdings}
         live = []
@@ -186,7 +188,7 @@ def main(argv=None):
                 sold_ids.append(item["id"])
             else:
                 live.append(item)
-        use_jev, jev_repeats, jev_updates = jev.enabled(), {}, {}
+        jev_repeats, jev_updates = {}, {}
         if use_jev:
             live, demoted = _jev_relevance(cfg, live)
             jev_repeats, jev_updates = _jev_repeats(live, recent)
