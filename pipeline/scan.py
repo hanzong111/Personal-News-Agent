@@ -169,7 +169,7 @@ def main(argv=None):
             alerts = memory.pending("alert")
 
         use_jev = jev.enabled()
-        # Jev mode checks repeats against a week of alerts (the briefer no longer gets history notes for that)
+        # Jev judges repeats by meaning, so it can afford to look back a week instead of 48 hours
         recent = memory.recent_alerts(hours=168 if use_jev else 48)
         kept_alerts, repeat_ids, stale_ids, sold_ids, demoted = [], [], [], [], []
         held = {h.code for h in cfg.holdings}
@@ -230,9 +230,7 @@ def main(argv=None):
         sectors = {s for item in alerts for s in item.get("sectors") or []}
         if need_brief:
             try:
-                # Jev mode already removed repeats, so the briefer doesn't need the history notes (saves input tokens)
-                notes = {} if use_jev else memory.notes_for(codes, sectors)
-                verdicts.update(briefer.run(cfg, need_brief, notes))
+                verdicts.update(briefer.run(cfg, need_brief, memory.notes_for(codes, sectors)))
             except Exception as e:
                 log.error("briefer failed; falling back to raw list", err=f"{type(e).__name__}: {e}")
                 verdicts.update(_fallback(need_brief))
