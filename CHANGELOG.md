@@ -6,6 +6,12 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Optional **Jev mode** (TypeSafe's Jev model): catches repeat stories across outlets and languages,
+  sends broker calls and stock lists to the digest instead of alerting, and types stories the keyword
+  rules can't. Choose it in setup step 5 or with `setup set jev=on`; the built-in rules stay the
+  default and the fallback. Benchmark in `docs/benchmarks/jev.md`, scripts in `benchmarks/jev/`.
+
 ### Changed
 - Renamed to **TickerPigeon**, with a new logo, the mascot Pip, a README banner and a dashboard
   favicon (assets in `docs/brand/`). The repository moves to `hanzong111/TickerPigeon`, and the

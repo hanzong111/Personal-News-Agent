@@ -58,6 +58,9 @@ flies when news names one of your stocks or touches its sector. There's no "quie
   the stored item, so a headline can't point at the wrong article.
 - **Cheap to run:** matching is plain code, and a model only sees news that already concerns you.
   See [the FAQ](#faq) for real costs.
+- **Optional Jev mode:** [TypeSafe's Jev](https://docs.typesafe.ai/) catches the same story told by
+  several outlets (even across English and Malay), ignores headlines that only quote or list your
+  stock, and sorts stories by type. See [the benchmark](#with-or-without-jev).
 - **Extras:** a local read-only dashboard, a cost ledger, a chat model router (Opus for hard
   questions, Sonnet for easy ones) and an LSS6 tender watcher.
 
@@ -85,6 +88,26 @@ flowchart LR
 - **Hermes does scheduling and delivery.** Each message type is a
   [Hermes Agent](https://github.com/NousResearch/hermes-agent) cron job running a small wrapper
   script. The script's output is the message; empty output means nothing is sent.
+
+## With or without Jev
+
+TickerPigeon works on its own. Jev is an optional model that makes typed judgments ("same event?",
+"is this stock the subject?") where the built-in rules use word overlap and regexes. Replayed on
+one week of real news ([full benchmark](docs/benchmarks/jev.md)):
+
+| | Built-in rules | With Jev |
+|---|---|---|
+| Duplicate alerts delivered in 8 days | 3 (one story alerted 3 times) | 0 in replay |
+| Repeat pairs found, stock news | 56 | 173 (+128 missed, 11 false merges fixed) |
+| Malaysia headlines grouped into stories | 120 → 102 | 120 → 75 (incl. English ↔ Malay) |
+| Broker calls and stock lists treated as company news | 16 of 94 | 0 (confidence ≥ 0.7) |
+| Stories typed as "other" | 189 of 256 | 61 of 256 |
+| Running cost | — | about US$1 a month |
+
+Turn it on in setup (step 5), or later with `python -m pipeline.setup set jev=on`. You'll need a
+TypeSafe API key from [console.typesafe.ai](https://console.typesafe.ai/), added to `~/.hermes/.env`
+as `TYPESAFE_API_KEY=…`. If Jev is off, has no key, or a call fails, TickerPigeon uses its built-in
+rules for that decision, so nothing breaks.
 
 ## Quick install
 
@@ -255,6 +278,7 @@ From the command line or chat:
 | `digest` | `enabled`, `time`, `days` | on, 18:30, weekdays |
 | `weekly` | `enabled`, `day` (`mon`..`sun`), `time` | on, fri, 20:00 |
 | `headlines` | `enabled`, `times` (list, all on the same minute) | on, 09:00 / 14:00 / 21:00 |
+| `jev` | `true` to use Jev for repeats, relevance and story types (needs `TYPESAFE_API_KEY`; see [With or without Jev](#with-or-without-jev)) | `false` |
 | `deliver` | the chat app every message goes to: `telegram`, `discord`, `slack`, `whatsapp`, `signal`, `feishu`, … or `app:chat_id` for a specific group or channel | the first app connected in Hermes |
 
 Change them with `setup set`, which saves the file and updates the Hermes jobs in one step:

@@ -154,6 +154,8 @@ def cmd_status(_a) -> int:
     print("\n".join(portfolio_lines(cfg)))
     print("Messages:" + ("" if p["_exists"] else " (defaults — not chosen yet)"))
     print("\n".join("  " + line for line in prefs.describe(p)))
+    from agents import jev
+    print(f"Jev smart filtering: {jev.status()[1]}")
     apps = connected_apps()
     print("Chat apps connected in Hermes: " + (", ".join(apps) or "none — run `hermes setup gateway`"))
     if p.get("deliver") and apps and p["deliver"].split(":")[0] not in apps:
@@ -241,6 +243,11 @@ def cmd_set(a) -> int:
             return 2
     prefs.save(p)
     print("\n".join(prefs.describe(p)))
+    if p.get("jev"):
+        from agents import jev
+        ok, why = jev.status()
+        if not ok:
+            print(f"⚠️ Jev is switched on but not active: {why}")
     if not a.no_apply:
         print("\n".join(apply(p)))
     return 0
@@ -366,6 +373,18 @@ class Wizard:
                          "run `hermes setup gateway` so messages can arrive.")
             return
 
+    def _jev(self, p: dict) -> None:
+        from agents import jev
+        self.say("  TypeSafe's Jev model catches the same story reported by several outlets (so you get one\n"
+                 "  alert, not three), skips headlines where your stock is only quoted or listed, and sorts\n"
+                 "  stories by type. It needs a TypeSafe API key (console.typesafe.ai) and costs about\n"
+                 "  US$1 a month. Without it, TickerPigeon uses its built-in rules. Benchmark: docs/benchmarks/jev.md")
+        key = jev.api_key()
+        self.say("  " + ("A TypeSafe key was found." if key else "No TypeSafe key found yet."))
+        p["jev"] = self._yes("  Use Jev?", bool(key) or bool(p.get("jev")))
+        if p["jev"] and not key:
+            self.say("  ⚠️ Add TYPESAFE_API_KEY=… to ~/.hermes/.env. Until then the built-in rules are used.")
+
     def _messages(self, p: dict) -> None:
         for m in prefs.MESSAGES:
             self.say(f"\n  {prefs.TITLE[m]} — {prefs.BLURB[m]}")
@@ -393,22 +412,25 @@ class Wizard:
     def run(self) -> int:
         cfg, p, data = config.load(), prefs.load(), portfolio.read()
         self.say("TickerPigeon — setup\n"
-                 "Four steps: the stocks you hold, a watchlist, your chat app, and which messages you want when.\n")
+                 "Five steps: the stocks you hold, a watchlist, your chat app, which messages you want when,\n"
+                 "and optional smarter filtering.\n")
         if data["holdings"] or data["watchlist"]:
             self.say("\n".join(portfolio_lines(cfg)))
             if not self._yes("Keep these and add to them?", True):
                 data = {"holdings": [], "watchlist": []}
-        self.say("\nStep 1/4 · Stocks you hold")
+        self.say("\nStep 1/5 · Stocks you hold")
         self._collect(cfg, data, watch=False)
-        self.say("\nStep 2/4 · Watchlist — stocks you don't hold but want news on (alerts marked 👀)")
+        self.say("\nStep 2/5 · Watchlist — stocks you don't hold but want news on (alerts marked 👀)")
         self._collect(cfg, data, watch=True)
         if not data["holdings"] and not data["watchlist"]:
             self.say("\nNo stocks chosen — nothing saved.")
             return 1
-        self.say("\nStep 3/4 · Chat app — where your messages arrive")
+        self.say("\nStep 3/5 · Chat app — where your messages arrive")
         self._chat_app(p)
-        self.say("\nStep 4/4 · Which messages, and when (Malaysia time)")
+        self.say("\nStep 4/5 · Which messages, and when (Malaysia time)")
         self._messages(p)
+        self.say("\nStep 5/5 · Smarter filtering with Jev (optional)")
+        self._jev(p)
 
         portfolio.write(data)
         prefs.save(p)

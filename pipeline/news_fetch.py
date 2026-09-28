@@ -22,6 +22,7 @@ import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from agents import jev
 from . import gnews_resolve
 from .config import STATE
 from .log import get as _get_log
@@ -74,6 +75,8 @@ asian games asiad aichi nagoya 2026 medal medals gold silver bronze sports sport
 bursa klci shares stock stocks market markets ringgit""".split())
 RARE_DF = 2
 JACCARD = 0.45
+JEV_MAX_PAIRS = 400     # Jev mode: cap on candidate pairs judged per run (most-overlapping first)
+JEV_LOOSE = 0.15        # Jev mode: candidate if Jaccard >= this or any shared rare word
 
 
 def _fetch(url: str, timeout: int = 20) -> bytes | None:
@@ -134,12 +137,29 @@ def cluster(items: list[dict]) -> list[dict]:
             i = parent[i]
         return i
 
+    rule_pairs, loose = [], []
     for i in range(n):
         for j in range(i + 1, n):
             if tsets[i] and tsets[j]:
+                shared_rare = len(rare[i] & rare[j])
                 jac = len(tsets[i] & tsets[j]) / len(tsets[i] | tsets[j])
-                if len(rare[i] & rare[j]) >= 2 or jac >= JACCARD:
-                    parent[find(i)] = find(j)
+                rule = shared_rare >= 2 or jac >= JACCARD
+                if rule:
+                    rule_pairs.append((i, j))
+                if rule or shared_rare >= 1 or jac >= JEV_LOOSE:
+                    loose.append((i, j, rule, shared_rare + jac))
+    links = rule_pairs
+    if jev.enabled() and loose:
+        # Jev decides each candidate pair; it also catches the same story told in another language, which
+        # shares only names. Pairs it can't answer keep the rule's verdict.
+        loose = sorted(loose, key=lambda p: -p[3])[:JEV_MAX_PAIRS]
+        pair_items = [({"title": items[i]["title"], "src": items[i].get("src", "")},
+                       {"title": items[j]["title"], "src": items[j].get("src", "")}) for i, j, _, _ in loose]
+        scores = jev.same_event(pair_items, role="cluster")
+        links = [(i, j) for (i, j, rule, _), s in zip(loose, scores) if (s > jev.SAME_AT if s is not None else rule)]
+        log.info("jev clustering", candidates=len(loose), linked=len(links), rule_would_link=len(rule_pairs))
+    for i, j in links:
+        parent[find(i)] = find(j)
     groups: dict[int, list[dict]] = {}
     for i, it in enumerate(items):
         groups.setdefault(find(i), []).append(it)

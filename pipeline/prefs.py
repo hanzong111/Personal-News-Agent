@@ -59,6 +59,8 @@ HEADER = """\
 # weekly     day mon..sun; time HH:MM
 # headlines  times: list of HH:MM, all on the same minute (e.g. all :00)
 # deliver    chat app for every message: telegram | discord | slack | whatsapp | signal | feishu | …
+# jev        true = use TypeSafe's Jev to catch repeat stories, off-topic mentions and story types
+#            (needs TYPESAFE_API_KEY; see docs/benchmarks/jev.md). false = the original rules only.
 #            (or platform:chat_id for a specific chat). Must be connected in Hermes (`hermes setup gateway`).
 """
 
@@ -73,6 +75,7 @@ def load(path: Path | None = None) -> dict:
     for m in MESSAGES:
         prefs[m].update((raw.get("messages") or {}).get(m) or {})
     prefs["deliver"] = raw.get("deliver") or None          # None = not chosen yet
+    prefs["jev"] = parse_bool(raw.get("jev", False))
     prefs["_exists"] = path.exists()
     prefs["_onboarded"] = raw.get("onboarded")
     validate(prefs)
@@ -89,6 +92,7 @@ def save(prefs: dict, path: Path | None = None, onboarded: str | None = None) ->
         lines += [f"    {k}: {flow(v)}" for k, v in prefs[m].items()]
     if prefs.get("deliver"):
         lines.append(f"deliver: {flow(prefs['deliver'])}")
+    lines.append(f"jev: {'true' if prefs.get('jev') else 'false'}")
     lines.append(f"onboarded: {flow(str(onboarded or prefs.get('_onboarded') or date.today().isoformat()))}")
     path.write_text("\n".join(lines) + "\n")
     return path
@@ -187,7 +191,7 @@ SETTABLE = {
     "alerts.enabled", "alerts.days", "alerts.hours",
     "digest.enabled", "digest.days", "digest.time",
     "weekly.enabled", "weekly.day", "weekly.time",
-    "headlines.enabled", "headlines.times", "deliver",
+    "headlines.enabled", "headlines.times", "deliver", "jev",
 }
 
 
@@ -196,6 +200,9 @@ def set_value(prefs: dict, key: str, value) -> None:
     key = key.strip().lower()
     if key in MESSAGES:
         key += ".enabled"
+    if key == "jev":
+        prefs["jev"] = parse_bool(value)
+        return
     if key in ("deliver", "app", "chat", "platform"):
         prefs["deliver"] = parse_deliver(value)
         return
@@ -265,7 +272,8 @@ def deliver_at(prefs: dict, message: str) -> str | None:
 
 def describe(prefs: dict) -> list[str]:
     """One line per message type, for the wizard, `setup status` and chat."""
-    out = [f"📨 Sent to — {platform_name(prefs.get('deliver'))}"]
+    out = [f"📨 Sent to — {platform_name(prefs.get('deliver'))}",
+           f"🧠 Jev smart filtering — {'on' if prefs.get('jev') else 'off'}"]
     for m in MESSAGES:
         p = prefs[m]
         days = "Mon–Fri" if p.get("days") == "weekdays" else "daily"

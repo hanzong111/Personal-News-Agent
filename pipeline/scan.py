@@ -14,7 +14,7 @@ from . import config, fetchers, gnews_resolve, hold
 from .match import tag, is_fresh, dedup_titles, is_repeat
 from .memory import Memory
 from .render import render, render_prices
-from agents import briefer
+from agents import briefer, jev
 from agents.renderer import render_alert
 from .log import get as _get_log, new_run
 
@@ -44,6 +44,59 @@ def collect(cfg: config.Config) -> list[dict]:
         uniq.setdefault(item["id"], item)
     out = dedup_titles([tag(item, cfg) for item in uniq.values() if is_fresh(item)])
     return gnews_resolve.apply(out)
+
+
+def _jev_relevance(cfg: config.Config, alerts: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Jev on: split alerts into (keep, demote). Demoted = every stock the headline names is only quoted
+    (a broker's call), listed in passing, or a different entity — with confidence >= jev.CONFIDENT. Those go
+    to the evening digest instead. Bursa filings are always about their company and are never demoted."""
+    pairs, owner = [], []
+    for n, item in enumerate(alerts):
+        if item.get("kind") == "announcement":
+            continue
+        for code in item.get("codes") or []:
+            h = cfg.by_code(code)
+            if h:
+                pairs.append((item["title"], h))
+                owner.append(n)
+    answers: dict[int, list] = {}
+    for n, ans in zip(owner, jev.roles(pairs)):
+        answers.setdefault(n, []).append(ans)
+    keep, demote = [], []
+    for n, item in enumerate(alerts):
+        got = answers.get(n)
+        if got and all(a and a[0] != "subject" and a[1] >= jev.CONFIDENT for a in got):
+            demote.append(item)
+            log.info("jev: stock not the subject, moved to digest", codes=",".join(item["codes"]),
+                     role=",".join(a[0] for a in got), title=item["title"][:70])
+        else:
+            keep.append(item)
+    return keep, demote
+
+
+def _jev_repeats(alerts: list[dict], recent: list[dict]) -> dict[str, str]:
+    """Jev on: {item id: title of the story it repeats}. Compares each alert with the recent alerts for the
+    same stock and with earlier items in this batch. Where Jev gives no answer, the word-overlap rule
+    decides that pair."""
+    order = sorted(alerts, key=lambda i: i.get("published") or "")
+    pairs, meta = [], []
+    for n, item in enumerate(order):
+        codes = set(item.get("codes") or [])
+        for row in recent:
+            if codes & set(row.get("codes") or []):
+                pairs.append((item, row))
+                meta.append((item["id"], None))
+        for prev in order[:n]:
+            if codes & set(prev.get("codes") or []):
+                pairs.append((item, prev))
+                meta.append((item["id"], prev["id"]))
+    repeats: dict[str, str] = {}
+    for (item_id, prev_id), (item, other), score in zip(meta, pairs, jev.same_event(pairs, role="repeat")):
+        if item_id in repeats or (prev_id and prev_id in repeats):   # never chain onto a dropped repeat
+            continue
+        if (score > jev.SAME_AT) if score is not None else bool(is_repeat(item, [other])):
+            repeats[item_id] = other["title"]
+    return repeats
 
 
 def _emit(text: str) -> None:
@@ -116,16 +169,23 @@ def main(argv=None):
             alerts = memory.pending("alert")
 
         recent = memory.recent_alerts()
-        kept_alerts, repeat_ids, stale_ids, sold_ids = [], [], [], []
+        kept_alerts, repeat_ids, stale_ids, sold_ids, demoted = [], [], [], [], []
         held = {h.code for h in cfg.holdings}
+        live = []
         for item in alerts:
             if not is_fresh(item):
                 stale_ids.append(item["id"])
-                continue
-            if not set(item.get("codes") or []) & held:
+            elif not set(item.get("codes") or []) & held:
                 sold_ids.append(item["id"])
-                continue
-            rep = is_repeat(item, recent)
+            else:
+                live.append(item)
+        use_jev, jev_repeats = jev.enabled(), {}
+        if use_jev:
+            live, demoted = _jev_relevance(cfg, live)
+            jev_repeats = _jev_repeats(live, recent)
+        for item in live:
+            rep = ({"title": jev_repeats[item["id"]]} if item["id"] in jev_repeats else None) if use_jev \
+                else is_repeat(item, recent)
             if rep:
                 repeat_ids.append(item["id"])
                 log.info("repeat of recent alert, skipped", codes=",".join(item["codes"]),
@@ -137,8 +197,10 @@ def main(argv=None):
             memory.advance(repeat_ids, "dropped", "repeat_recent", run_id)
             memory.advance(stale_ids, "dropped", "stale", run_id)
             memory.advance(sold_ids, "dropped", "no_longer_held", run_id)
+            memory.advance([i["id"] for i in demoted], "digest", "jev:not_subject", run_id)
 
-        log.info("gate", fetched=len(items), new=len(new), alerts=len(alerts), queued_for_digest=len(queued),
+        log.info("gate", fetched=len(items), new=len(new), alerts=len(alerts), queued_for_digest=len(queued) + len(demoted),
+                 jev=use_jev, repeats=len(repeat_ids), demoted=len(demoted),
                  queued_for_judge=len(unmatched), pending_alerts=len(alerts),
                  committed=not a.dry_run and not a.force_recent)
         for item in alerts:
