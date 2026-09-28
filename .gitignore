@@ -23,3 +23,7 @@ scratch/
 CLAUDE.md
 docs/dev/
 docs/cc-bridge/
+
+# Jev experiments (experiment/jev branch): cached answers and results contain your stocks and headlines
+experiments/jev/.cache/
+experiments/jev/results/
