@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-REPO = "https://github.com/hanzong111/Personal-News-Agent"
+REPO = "https://github.com/hanzong111/TickerPigeon"
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
 

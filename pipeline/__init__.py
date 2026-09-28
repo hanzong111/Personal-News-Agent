@@ -1,4 +1,4 @@
-"""Personal News Agent pipeline. The version lives in the repo-root VERSION file (Semantic Versioning)."""
+"""TickerPigeon pipeline. The version lives in the repo-root VERSION file (Semantic Versioning)."""
 from pathlib import Path
 
 try:

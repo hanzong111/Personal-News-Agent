@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/NousResearch/hermes-agent/issues
     about: Problems with Hermes itself (gateway, chat apps, cron scheduler, model providers).
   - name: Security vulnerability
-    url: https://github.com/hanzong111/Personal-News-Agent/security/advisories/new
+    url: https://github.com/hanzong111/TickerPigeon/security/advisories/new
     about: Report privately. Please don't open a public issue.

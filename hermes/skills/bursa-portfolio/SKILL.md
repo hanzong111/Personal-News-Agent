@@ -1,6 +1,6 @@
 ---
 name: bursa-portfolio
-description: "Bursa Malaysia holdings: what the user owns, sectors, live prices, add/remove stocks, check for news."
+description: "TickerPigeon portfolio (Bursa Malaysia holdings): what the user owns, sectors, live prices, add/remove stocks, check for news."
 version: 1.0.0
 author: hanzong111
 license: MIT

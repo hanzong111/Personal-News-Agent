@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Personal News Agent — one-shot installer. Installs what's missing, then walks you through setup.
+# TickerPigeon — one-shot installer. Installs what's missing, then walks you through setup.
 #
-#   curl -fsSL https://raw.githubusercontent.com/hanzong111/Personal-News-Agent/main/bootstrap.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/hanzong111/TickerPigeon/main/bootstrap.sh | bash
 #   # or, from a clone:
 #   ./bootstrap.sh [--yes] [--dir DIR] [--deliver APP] [--with-router] [--skip-hermes-setup]
 #
 # Steps (each is skipped when already done, so re-running is safe):
 #   1. system packages   git, curl, python3 (+ venv)           via apt / dnf / yum / pacman / zypper / apk / brew
-#   2. the code          clone (or update) into --dir           default ~/Personal-News-Agent
+#   2. the code          clone (or update) into --dir           default ~/TickerPigeon
 #   3. Hermes Agent      official installer, if `hermes` is missing
 #   4. Hermes config     `hermes setup`: AI provider + chat app (Telegram, Discord, Feishu, …)
 #   5. project install   Python venv + deps, cron wrappers + chat skills into ~/.hermes
@@ -21,8 +21,8 @@
 # terminal to ask and without --yes, those steps are skipped.
 set -euo pipefail
 
-REPO_URL="https://github.com/hanzong111/Personal-News-Agent.git"
-DIR="${HOME}/Personal-News-Agent"
+REPO_URL="https://github.com/hanzong111/TickerPigeon.git"
+DIR="${HOME}/TickerPigeon"
 YES=0; DELIVER=""; ROUTER=""; SKIP_HERMES_SETUP=0; REFRESH=""
 MIN_PY="3.10"
 
@@ -73,7 +73,7 @@ case "$OS" in
   MINGW*|MSYS*|CYGWIN*) die "Native Windows isn't supported. Install WSL2 (PowerShell as admin: wsl --install), open Ubuntu, and run this again there." ;;
   *) die "Unsupported system: $OS (Linux, macOS or WSL2 needed)." ;;
 esac
-bold "Personal News Agent — installer ($PLATFORM)"
+bold "TickerPigeon — installer ($PLATFORM)"
 
 # ---------------------------------------------------------------- 1. system packages
 bold "1/8 System packages"
@@ -139,7 +139,7 @@ else
   git clone --quiet "$REPO_URL" "$DIR" && ok "cloned into $DIR"
 fi
 cd "$DIR"
-[ -f VERSION ] && ok "Personal News Agent $(cat VERSION)"
+[ -f VERSION ] && ok "TickerPigeon $(cat VERSION)"
 
 # ---------------------------------------------------------------- 3. Hermes Agent
 bold "3/8 Hermes Agent"

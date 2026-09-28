@@ -63,8 +63,8 @@ workflow tags `v1.1.0` and publishes a GitHub Release with that CHANGELOG sectio
 ## Development setup
 
 ```bash
-git clone https://github.com/hanzong111/Personal-News-Agent.git
-cd Personal-News-Agent
+git clone https://github.com/hanzong111/TickerPigeon.git
+cd TickerPigeon
 python3 -m venv .venv
 ./.venv/bin/python -m pip install -r requirements-dev.txt
 ./.venv/bin/python -m pytest -q

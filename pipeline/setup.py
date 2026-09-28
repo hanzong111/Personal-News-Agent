@@ -52,7 +52,7 @@ def target(p: dict) -> str:
 
 
 def send_test(dest: str, run=subprocess.run) -> str:
-    msg = ("✅ Personal News Agent is connected.\n"
+    msg = ("✅ TickerPigeon is connected.\n"
            "Alerts, digests and reviews for your Bursa stocks will arrive here.")
     try:
         r = run(["hermes", "send", "-q", "-t", dest, msg], capture_output=True, text=True, timeout=60)
@@ -149,7 +149,7 @@ def apply(p: dict, dry_run: bool = False, jobs_file: Path | None = None, run=sub
 
 def cmd_status(_a) -> int:
     cfg, p = config.load(), prefs.load()
-    print(f"Personal News Agent {__version__}")
+    print(f"TickerPigeon {__version__}")
     print(f"Set up: {'yes' if onboarded(cfg) else 'no — run the setup flow'}")
     print("\n".join(portfolio_lines(cfg)))
     print("Messages:" + ("" if p["_exists"] else " (defaults — not chosen yet)"))
@@ -392,7 +392,7 @@ class Wizard:
 
     def run(self) -> int:
         cfg, p, data = config.load(), prefs.load(), portfolio.read()
-        self.say("Personal News Agent — setup\n"
+        self.say("TickerPigeon — setup\n"
                  "Four steps: the stocks you hold, a watchlist, your chat app, and which messages you want when.\n")
         if data["holdings"] or data["watchlist"]:
             self.say("\n".join(portfolio_lines(cfg)))
@@ -428,7 +428,7 @@ class Wizard:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m pipeline.setup", description="Portfolio + news preference setup.")
-    ap.add_argument("--version", action="version", version=f"Personal News Agent {__version__}")
+    ap.add_argument("--version", action="version", version=f"TickerPigeon {__version__}")
     sub = ap.add_subparsers(dest="cmd")
     sub.add_parser("status")
     f = sub.add_parser("find"); f.add_argument("query")

@@ -1,6 +1,6 @@
 ---
 name: malaysia-news
-description: "Follow-up on the Malaysia headline index: 'more <section>' lists, and article detail for any headline."
+description: "TickerPigeon Malaysia headlines follow-up: 'more <section>' lists, and article detail for any headline."
 version: 2.0.0
 author: hanzong111
 license: MIT

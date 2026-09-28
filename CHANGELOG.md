@@ -6,6 +6,11 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Renamed to **TickerPigeon**, with a new logo, the mascot Pip, a README banner and a dashboard
+  favicon (assets in `docs/brand/`). The repository moves to `hanzong111/TickerPigeon`, and the
+  installer's default folder is now `~/TickerPigeon`.
+
 ## [1.0.0] - 2026-09-28
 
 First public release.
@@ -31,5 +36,5 @@ First public release.
 - Versioning: Semantic Versioning from the `VERSION` file, `scripts/bump_version.py` to cut a
   release, and a workflow that tags `vX.Y.Z` and publishes the GitHub Release when `main` changes.
 
-[Unreleased]: https://github.com/hanzong111/Personal-News-Agent/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/hanzong111/Personal-News-Agent/releases/tag/v1.0.0
+[Unreleased]: https://github.com/hanzong111/TickerPigeon/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/hanzong111/TickerPigeon/releases/tag/v1.0.0

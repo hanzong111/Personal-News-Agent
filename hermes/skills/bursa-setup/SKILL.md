@@ -1,6 +1,6 @@
 ---
 name: bursa-setup
-description: "First-time setup and later changes for the Bursa news agent: which stocks the user holds, a watchlist, which chat app messages go to, and which messages (alerts, digest, weekly, headlines) they get at what times."
+description: "TickerPigeon setup: first-time onboarding and later changes — which stocks the user holds, a watchlist, which chat app messages go to, and which messages (alerts, digest, weekly, headlines) they get at what times."
 version: 1.0.0
 author: hanzong111
 license: MIT
