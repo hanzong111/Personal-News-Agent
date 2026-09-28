@@ -1,4 +1,5 @@
 PyYAML>=6.0.3
 curl_cffi>=0.16.3    # Chrome-impersonating HTTP client (Bursa and some news sites are Cloudflare-gated)
+typesafe-sdk>=0.7.2  # Jev mode (only used with `jev: true` and a TYPESAFE_API_KEY)
 # Optional: only if you set AGENT_BACKEND=anthropic instead of routing LLM calls through Hermes
 # anthropic

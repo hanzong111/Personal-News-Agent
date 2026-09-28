@@ -290,6 +290,7 @@ class WizardTest(TempData):
             "y", "7pm", "daily",     # digest
             "n",                     # no weekly
             "y", "08:00,20:00",      # headlines
+            "n",                     # no Jev
             "y",                     # apply
             "y",                     # send a test message
         ])
@@ -310,7 +311,7 @@ class WizardTest(TempData):
         self.assertEqual(["discord"], sent)
 
     def test_bad_time_is_asked_again(self):
-        answers = iter(["gamuda", "", "", "", "whatsapp", "n", "y", "half six", "6:30pm", "weekdays", "n", "n", "n", "n"])
+        answers = iter(["gamuda", "", "", "", "whatsapp", "n", "y", "half six", "6:30pm", "weekdays", "n", "n", "n", "n", "n"])
         said = []
         w = setup.Wizard(ask=lambda _q: next(answers), say=said.append, apply_fn=lambda p: ["ok"], send_fn=lambda d: "")
         with patch.object(portfolio, "_get_json", fake_fetch):

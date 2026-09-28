@@ -11,7 +11,7 @@ import os
 import re
 from collections import defaultdict
 
-from agents import curator
+from agents import curator, jev
 from . import config
 from .memory import Memory
 from .log import get as _get_log, new_run
@@ -133,17 +133,26 @@ def main(argv=None):
             except Exception as e:
                 log.error("curator failed; using rules", err=f"{type(e).__name__}: {e}")
 
+        # Story type when neither the briefer nor the curator gave one: Jev if on, else the keyword rules.
+        untyped = [item for item in items if not item.get("type")]
+        jev_types = {item["id"]: ans[0] for item, ans in zip(untyped, jev.story_types(untyped)) if ans}
+        if jev_types:
+            log.info("jev story types", items=len(untyped), typed=len(jev_types))
+
+        def fallback_type(item: dict) -> str:
+            return jev_types.get(item["id"]) or _rule_type(item)
+
         with log.span("cluster", items=len(items), rule_matches=rule_matches, unmatched=len(unmatched)):
             resolved: dict[str, str] = {}
             for item in items:
                 if item["id"] in existing_matches:
                     story = existing_matches[item["id"]]
-                    memory.attach_story(item, story["id"], item.get("type") or story.get("type") or _rule_type(item))
+                    memory.attach_story(item, story["id"], item.get("type") or story.get("type") or fallback_type(item))
                     resolved[item["id"]] = story["id"]
             deferred: list[tuple[dict, dict, str]] = []
             for item in unmatched:
                 assignment = model_out["assignments"].get(item["id"], {})
-                story_type = assignment.get("type") or item.get("type") or _rule_type(item)
+                story_type = assignment.get("type") or item.get("type") or fallback_type(item)
                 target = assignment.get("story_id") or "new"
                 if target.startswith("new:"):
                     deferred.append((item, assignment, story_type))
@@ -166,10 +175,10 @@ def main(argv=None):
                     continue
                 story_id = resolved.get(parent)
                 if story_id:
-                    memory.attach_story(item, story_id, item.get("type") or _rule_type(item))
+                    memory.attach_story(item, story_id, item.get("type") or fallback_type(item))
                     resolved[item["id"]] = story_id
                 else:
-                    resolved[item["id"]] = memory.create_story(item, item.get("type") or _rule_type(item))
+                    resolved[item["id"]] = memory.create_story(item, item.get("type") or fallback_type(item))
 
         with log.span("notes", keys=len(touched)):
             notes = _deterministic_notes(memory, touched)

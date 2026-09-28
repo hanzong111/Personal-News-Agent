@@ -27,3 +27,7 @@ docs/cc-bridge/
 # Jev experiments (experiment/jev branch): cached answers and results contain your stocks and headlines
 experiments/jev/.cache/
 experiments/jev/results/
+
+# Jev benchmark: cached answers and results contain your stocks and headlines
+benchmarks/jev/.cache/
+benchmarks/jev/results/
