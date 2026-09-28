@@ -2,13 +2,23 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
+  # Branch model: features merge into develop; only develop is merged into main (by the maintainer).
+  base-branch:
+    name: PR targets develop
+    if: github.event_name == 'pull_request' && github.base_ref == 'main' && github.head_ref != 'develop'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Pull requests go to 'develop', not 'main'. Change the base branch to develop (Edit next to the PR title)."
+          exit 1
+
   tests:
     name: Tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest

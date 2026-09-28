@@ -4,6 +4,7 @@
 
 ## Checklist
 
+- [ ] This PR targets `develop` (not `main`) and comes from its own `feature/…` / `fix/…` branch
 - [ ] `python -m pytest -q` passes
 - [ ] `shellcheck -S warning` passes for any changed shell script
 - [ ] Tests added or updated for behaviour changes
