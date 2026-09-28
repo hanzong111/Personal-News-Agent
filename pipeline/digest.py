@@ -9,7 +9,7 @@ from . import config, fetchers, hold
 from .match import is_fresh
 from .memory import Memory
 from .render import render, render_prices
-from agents import digest_writer, judge
+from agents import digest_writer, judge, jev
 from agents.renderer import render_digest
 from datetime import datetime
 from .log import get as _get_log, new_run
@@ -27,8 +27,33 @@ def _emit(text: str) -> None:
     sys.stdout.flush()
 
 
+def _jev_judge(cfg, candidates: list[dict], memory: Memory, run_id: str, persist: bool) -> tuple[list[dict], list[dict]]:
+    """Jev mode: typed relevance instead of the Haiku judge. Returns (rescued, unanswered); the caller sends
+    only the unanswered ones to Haiku."""
+    rescued, unanswered = [], []
+    for candidate, ans in zip(candidates, jev.relevance(cfg, candidates)):
+        if ans is None:
+            unanswered.append(candidate)
+            continue
+        verdict = {**ans, "why": ""} if (ans["codes"] or ans["sectors"]) else None
+        if verdict:
+            candidate.update(codes=verdict["codes"], sectors=verdict["sectors"], tier=2,
+                             mention=bool(verdict["codes"]), judge_why="")
+            rescued.append(candidate)
+            log.info("rescued (jev)", id=candidate["id"], codes=",".join(verdict["codes"]) or "-",
+                     sectors=",".join(verdict["sectors"]) or "-", title=candidate.get("title", "")[:70])
+        if persist:
+            memory.judge_result(candidate["id"], verdict, run_id)
+    log.info("jev judge", candidates=len(candidates), rescued=len(rescued), to_haiku=len(unanswered))
+    return rescued, unanswered
+
+
 def _judge_chunks(cfg, candidates: list[dict], memory: Memory, run_id: str, persist: bool) -> list[dict]:
     rescued: list[dict] = []
+    if jev.enabled():
+        rescued, candidates = _jev_judge(cfg, candidates, memory, run_id, persist)
+        if not candidates:
+            return rescued
     total_chunks = (len(candidates) + JUDGE_CHUNK - 1) // JUDGE_CHUNK
     if len(candidates) > JUDGE_CHUNK:
         log.warn("judge overflow chunked", candidates=len(candidates), chunk=JUDGE_CHUNK, chunks=total_chunks)

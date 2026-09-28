@@ -196,6 +196,57 @@ def roles(pairs: list[tuple[str, object]]) -> list[tuple[str, float] | None]:
     return [(a["role"]["choice"], a["role"]["confidence"]) if a else None for a in _ask_many(reqs, "role")]
 
 
+SECTOR_AT = 0.6        # relevance(): sector Noul above this = the item materially affects the sector
+
+
+def relevance(cfg, items: list[dict]) -> list[dict | None]:
+    """Stand-in for the Haiku relevance judge (agents/judge.py) on items no keyword matched.
+    Per item: {"codes": [...], "sectors": [...]} — empty lists = not relevant — or None if Jev had no
+    answer (the caller then asks the Haiku judge). A stock counts only when it is named in the text and
+    is the headline's subject; a sector counts when the item materially changes its economics."""
+    if not items or not enabled():
+        return [None] * len(items)
+    from typesafe_sdk import Noul
+    _, role, _ = _questions()
+    sectors = [(k, s) for k, s in cfg.sectors.items() if cfg.holdings_in_sector(k)]
+    sector_q = {
+        f"sector:{k}": Noul(
+            instructions=f"Does `item` report a Malaysian development that materially changes the business "
+                         f"of the {s.label} sector?",
+            criteria={"true": "A Malaysian regulation, tariff, tax, subsidy, price cap or policy change for this "
+                              "sector, a large project or contract award in it, or a clear price or demand shock "
+                              "with a named channel to it.",
+                      "false": "Foreign news without a Malaysian rule change, general market wrap-ups or index "
+                               "moves, other companies' results, lifestyle or tech launches, or only a general "
+                               "theme with no specific mechanism."})
+        for k, s in sectors}
+    reqs, named = [], []
+    for it in items:
+        text = f"{it.get('title', '')} {it.get('summary', '')}".lower()
+        hs = [h for h in cfg.holdings if any(a.strip().lower() and a.strip().lower() in text for a in h.aliases)]
+        named.append(hs)
+        qs = dict(sector_q)
+        state = {"item": {"headline": it.get("title", ""), **({"summary": str(it["summary"])[:300]} if it.get("summary") else {})}}
+        for h in hs:
+            qs[f"stock:{h.code}"] = role
+            state[f"company_{h.code}"] = {"name": h.name, "ticker": h.short}
+        reqs.append((state, qs))
+    # role() refers to `company`; give each stock question its own pointer by rewriting the instruction
+    reqs = [(state, {k: (q if not k.startswith("stock:") else
+                         q.model_copy(update={"instructions": q.instructions.replace("`company`", f"`company_{k[6:]}`")}))
+                     for k, q in qs.items()}) for state, qs in reqs]
+    out = []
+    for hs, ans in zip(named, _ask_many(reqs, "relevance")):
+        if ans is None:
+            out.append(None)
+            continue
+        codes = [h.code for h in hs if ans[f"stock:{h.code}"]["choice"] == "subject"
+                 and ans[f"stock:{h.code}"]["confidence"] >= CONFIDENT]
+        secs = [k for k, _ in sectors if ans[f"sector:{k}"]["noul"] > SECTOR_AT]
+        out.append({"codes": codes, "sectors": secs})
+    return out
+
+
 def story_types(items: list[dict]) -> list[tuple[str, float] | None]:
     """(type, confidence) per item, or None."""
     if not items or not enabled():

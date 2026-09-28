@@ -115,3 +115,27 @@ class ClusterTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class JudgeTest(unittest.TestCase):
+    def test_jev_answers_are_used_and_the_rest_go_to_haiku(self):
+        from pipeline import digest
+        cfg = config.load()
+        cands = [{"id": "p", "title": "Govt cuts solar grid charge", "summary": ""},
+                 {"id": "q", "title": "Celebrity wedding in Langkawi", "summary": ""},
+                 {"id": "r", "title": "Something Jev could not answer", "summary": ""}]
+        answers = [{"codes": [], "sectors": ["solar"]}, {"codes": [], "sectors": []}, None]
+
+        class Mem:
+            def __init__(self):
+                self.saved = {}
+
+            def judge_result(self, id_, verdict, run):
+                self.saved[id_] = verdict
+        mem = Mem()
+        with patch.object(jev, "relevance", return_value=answers):
+            rescued, left = digest._jev_judge(cfg, cands, mem, "run", persist=True)
+        self.assertEqual(["p"], [c["id"] for c in rescued])
+        self.assertEqual(["solar"], rescued[0]["sectors"])
+        self.assertEqual(["r"], [c["id"] for c in left])                        # only this one reaches Haiku
+        self.assertEqual({"p": {"codes": [], "sectors": ["solar"], "why": ""}, "q": None}, mem.saved)
