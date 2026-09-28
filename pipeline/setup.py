@@ -27,7 +27,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from . import config, log as pipeline_log, portfolio, prefs
+from . import __version__, config, log as pipeline_log, portfolio, prefs
 from .log import get as _get_log, new_run
 
 log = _get_log("setup")
@@ -149,6 +149,7 @@ def apply(p: dict, dry_run: bool = False, jobs_file: Path | None = None, run=sub
 
 def cmd_status(_a) -> int:
     cfg, p = config.load(), prefs.load()
+    print(f"Personal News Agent {__version__}")
     print(f"Set up: {'yes' if onboarded(cfg) else 'no — run the setup flow'}")
     print("\n".join(portfolio_lines(cfg)))
     print("Messages:" + ("" if p["_exists"] else " (defaults — not chosen yet)"))
@@ -427,6 +428,7 @@ class Wizard:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m pipeline.setup", description="Portfolio + news preference setup.")
+    ap.add_argument("--version", action="version", version=f"Personal News Agent {__version__}")
     sub = ap.add_subparsers(dest="cmd")
     sub.add_parser("status")
     f = sub.add_parser("find"); f.add_argument("query")

@@ -7,6 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/hanzong111/Personal-News-Agent/actions/workflows/ci.yml"><img src="https://github.com/hanzong111/Personal-News-Agent/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/hanzong111/Personal-News-Agent/releases"><img src="https://img.shields.io/github/v/release/hanzong111/Personal-News-Agent" alt="Latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white" alt="Python 3.10+">
   <a href="https://github.com/NousResearch/hermes-agent"><img src="https://img.shields.io/badge/built%20on-Hermes%20Agent-7b3fe4" alt="Built on Hermes Agent"></a>
@@ -409,8 +410,12 @@ cd ~/Personal-News-Agent
 ```
 
 Or by hand: `git pull && ./hermes/install.sh --force`. Replaced files are kept as `*.bak`. Your
-stocks, preferences and news history in `data/` are never touched by an update. See
-[CHANGELOG.md](CHANGELOG.md) for what changed.
+stocks, preferences and news history in `data/` are never touched by an update.
+
+Releases follow [Semantic Versioning](https://semver.org/): a major version (2.0.0) means a
+breaking change, so read its notes first. Check your version with
+`./.venv/bin/python -m pipeline.setup --version`. See [CHANGELOG.md](CHANGELOG.md) or the
+[releases page](https://github.com/hanzong111/Personal-News-Agent/releases) for what changed.
 
 ## Uninstalling
 

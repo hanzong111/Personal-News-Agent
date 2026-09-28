@@ -6,12 +6,7 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
-### Changed
-- Branch model: work happens on `feature/…` branches merged into `develop`; `main` holds releases
-  and only the maintainer merges into it. CI runs on both and rejects PRs into `main` from
-  anything but `develop`. Dependabot targets `develop`.
-
-## [0.1.0] - 2026-09-28
+## [1.0.0] - 2026-09-28
 
 First public release.
 
@@ -29,7 +24,12 @@ First public release.
 - `bootstrap.sh` one-command installer (Linux, macOS, WSL2), plus `hermes/uninstall.sh`.
 - Sector library of 16 common Bursa sectors, each matched to Yahoo Finance industry names.
 - Local read-only dashboard, cost ledger, LSS6 tender watcher and chat model router (optional).
-- 66 tests, run in CI on Python 3.10–3.12, plus shellcheck.
+- 71 tests, run in CI on Python 3.10–3.12, plus shellcheck.
+- Branch model: work lands on `develop` through `feature/…` and `fix/…` branches; `main` holds
+  releases and only the maintainer merges into it. CI rejects pull requests into `main` that
+  don't come from `develop`.
+- Versioning: Semantic Versioning from the `VERSION` file, `scripts/bump_version.py` to cut a
+  release, and a workflow that tags `vX.Y.Z` and publishes the GitHub Release when `main` changes.
 
-[Unreleased]: https://github.com/hanzong111/Personal-News-Agent/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/hanzong111/Personal-News-Agent/releases/tag/v0.1.0
+[Unreleased]: https://github.com/hanzong111/Personal-News-Agent/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/hanzong111/Personal-News-Agent/releases/tag/v1.0.0

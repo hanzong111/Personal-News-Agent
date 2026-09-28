@@ -139,6 +139,7 @@ else
   git clone --quiet "$REPO_URL" "$DIR" && ok "cloned into $DIR"
 fi
 cd "$DIR"
+[ -f VERSION ] && ok "Personal News Agent $(cat VERSION)"
 
 # ---------------------------------------------------------------- 3. Hermes Agent
 bold "3/8 Hermes Agent"
@@ -232,7 +233,7 @@ fi
 bold "8/8 Your stocks and messages"
 STATUS="$(.venv/bin/python -m pipeline.setup status 2>/dev/null || true)"
 if grep -q "^Set up: yes" <<<"$STATUS"; then
-  sed -n '2,20p' <<<"$STATUS" | sed 's/^/  /'
+  sed -n '3,21p' <<<"$STATUS" | sed 's/^/  /'
   if ask "Run the setup again to change stocks or message times?" n; then
     interactive .venv/bin/python -m pipeline.setup wizard || true
   fi

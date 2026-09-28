@@ -1,0 +1,29 @@
+name: Release
+
+# Merging develop into main publishes a release: if VERSION has no tag yet, tag vX.Y.Z on this
+# commit and create a GitHub Release whose notes are that version's CHANGELOG section.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Tag and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="$(cat VERSION)"
+          if git rev-parse -q --verify "refs/tags/v$v" >/dev/null; then
+            echo "v$v is already released — nothing to do"; exit 0
+          fi
+          awk -v v="$v" 'index($0, "## [" v "]") == 1 {f=1; next} /^## \[/ && f {exit} /^\[[^]]+\]: / {exit} f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "::error::No '## [$v]' section in CHANGELOG.md"; exit 1; }
+          gh release create "v$v" --target "$GITHUB_SHA" --title "v$v" --notes-file notes.md
