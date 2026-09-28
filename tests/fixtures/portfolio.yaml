@@ -1,0 +1,24 @@
+# Test portfolio — the suite never reads your real data/portfolio.yaml (see tests/__init__.py).
+holdings:
+  - code: "3336"
+    short: IJM
+    name: IJM Corporation Bhd
+    sector: construction
+    aliases: ['IJM ', IJM Corp]
+    queries: ['"IJM Corp"']
+
+  - code: "5184"
+    short: CYPARK
+    name: Cypark Resources Bhd
+    sector: solar
+    aliases: [Cypark, CYPARK]
+    queries: ['"Cypark"']
+
+  - code: "5878"
+    short: KPJ
+    name: KPJ Healthcare Bhd
+    sector: healthcare
+    aliases: [KPJ Healthcare, 'KPJ ']
+    queries: ['"KPJ Healthcare"']
+
+watchlist: []

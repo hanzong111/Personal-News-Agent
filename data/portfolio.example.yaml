@@ -1,0 +1,31 @@
+# Holdings — the agent's source of truth for "what do I hold".
+# Edited by the bursa-portfolio skill or by hand. Every pipeline run reads this fresh.
+#
+# code      Bursa stock code (used for KLSE Screener + Bursa API lookups)
+# short     Bursa short name
+# name      full company name
+# sector    key into sectors.yaml (which industry themes apply)
+# aliases   strings that identify this company in a headline (case-insensitive)
+# queries   Google News search queries for stock-specific news
+# qty / avg_cost   optional, for your own reference (not used for alerts)
+
+#
+# Copy this file to data/portfolio.yaml and replace the entries with your own holdings.
+# Every holding's `sector` must be a key in data/sectors.yaml.
+
+holdings:
+  - code: "3336"
+    short: IJM
+    name: IJM Corporation Bhd
+    sector: construction
+    aliases: [IJM Corp, "IJM "]             # trailing space = whole-word match
+    queries: ['"IJM Corp"']
+    # qty: 1000
+    # avg_cost: 2.85
+
+  - code: "5878"
+    short: KPJ
+    name: KPJ Healthcare Bhd
+    sector: healthcare
+    aliases: [KPJ Healthcare, "KPJ "]
+    queries: ['"KPJ Healthcare"']

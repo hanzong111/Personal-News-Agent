@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Pipeline Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="crt" aria-hidden="true"></div>
+<div class="pixel-sky" aria-hidden="true">
+  <span class="cloud cloud-a"></span>
+  <span class="cloud cloud-b"></span>
+  <span class="coin coin-a"></span>
+  <span class="coin coin-b"></span>
+</div>
+
+<header class="bar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">H</span>
+    <div class="brand-copy">
+      <span class="eyebrow">WORLD 01 · MARKET OPS</span>
+      <h1>PIPELINE ARCADE</h1>
+    </div>
+    <span class="sub">BURSA · NEWS · HERMES</span>
+  </div>
+  <div class="leds">
+    <span class="led-wrap"><i id="led-gw" class="led"></i>GATEWAY</span>
+    <span class="led-wrap"><i id="led-sse" class="led"></i>LIVE</span>
+    <span class="clock" id="clock">--:--:--</span>
+  </div>
+</header>
+
+<div id="findings" class="findings hidden"></div>
+
+<main class="grid">
+
+  <section class="panel span-12" id="panel-cost">
+    <h2><span class="panel-icon">$</span>COST <small id="cost-title">every model call · cron + pipeline + chat · API-equivalent</small></h2>
+    <div id="cost-hero" class="cost-hero" aria-live="polite"><div class="cost-loading">READING TOKEN LEDGER…</div></div>
+    <div id="cost-tiles" class="tiles cost-tiles"></div>
+    <div id="cost-breakdown" class="cost-breakdown hidden">
+      <div class="cost-subhead"><span>TOP COST DRIVERS</span><small>API-equivalent list price</small></div>
+      <div id="cost-jobs" class="bars cost-jobs"></div>
+    </div>
+  </section>
+
+  <section class="panel span-8" id="panel-nodes">
+    <h2><span class="panel-icon">◆</span>NODES <small>latest run per pipeline · lights up live</small></h2>
+    <div class="legend"><span><i style="background:var(--amber)"></i>executing</span><span><i style="background:var(--green)"></i>done</span><span><i style="background:var(--red)"></i>error</span><span><i style="background:var(--dim)"></i>idle / no cron match</span></div>
+    <div id="nodes"></div>
+  </section>
+
+  <section class="panel span-4" id="panel-jobs">
+    <h2><span class="panel-icon">★</span>JOBS <small>hermes cron</small></h2>
+    <div class="scroll"><table class="jobs" id="jobs"></table></div>
+    <div class="queues" id="queues"></div>
+  </section>
+
+  <section class="panel span-5" id="panel-runs">
+    <h2><span class="panel-icon">▶</span>RUNS <small>newest first · click to inspect</small></h2>
+    <div class="scroll"><table class="runs" id="runs"></table></div>
+  </section>
+
+  <section class="panel span-7" id="panel-timeline">
+    <h2><span class="panel-icon">◫</span>TIMELINE <small id="timeline-title">select a run</small></h2>
+    <div id="timeline" class="timeline"></div>
+  </section>
+
+  <section class="panel span-7" id="panel-log">
+    <h2><span class="panel-icon">›_</span>LOG
+      <small>
+        <select id="log-node"><option value="">all nodes</option></select>
+        <select id="log-level">
+          <option value="DEBUG">debug+</option>
+          <option value="INFO" selected>info+</option>
+          <option value="WARN">warn+</option>
+          <option value="ERROR">error</option>
+        </select>
+        <label><input type="checkbox" id="log-follow" checked> follow</label>
+      </small>
+    </h2>
+    <pre id="log" class="log"></pre>
+  </section>
+
+  <section class="panel span-5" id="panel-health">
+    <h2><span class="panel-icon">♥</span>HEALTH <small>last 24 h</small></h2>
+    <div id="health" class="tiles"></div>
+    <h2 class="mt"><span class="panel-icon">●</span>SPEND <small>llm · 7 d</small></h2>
+    <div id="spend"></div>
+  </section>
+
+  <section class="panel span-12" id="panel-memory">
+    <h2><span class="panel-icon">▤</span>MEMORY <small id="memory-title">news.db · staged news store · curated 19:00</small></h2>
+    <div id="memory-tiles" class="tiles"></div>
+    <div id="memory-stages" class="stages"></div>
+    <div class="mem-cols">
+      <div>
+        <h3>STORIES <small id="memory-stories-title">open · last 7 d</small></h3>
+        <div class="scroll"><table class="stories" id="memory-stories"></table></div>
+      </div>
+      <div>
+        <h3>NOTES <small>rolling · one per holding / sector</small></h3>
+        <div class="scroll" id="memory-notes"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="bar foot">
+  <span><b>PLAYER 1</b> · read-only · 127.0.0.1:9120 · <span id="evbytes"></span></span>
+  <span class="foot-status"><i class="mini-pipe"></i> SYSTEM READY <span class="blink">◆</span></span>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Your data — personal portfolio, runtime state and logs never go in git
+data/portfolio.yaml
+data/preferences.yaml
+data/state/
+data/logs/
+
+# Local-only
+.env
+scratch/
+*.bak
+*.migrated
+*.db
+*.db-shm
+*.db-wal
+
+# Personal working notes (Claude Code session state, private deployment details)
+CLAUDE.md
+docs/dev/
+docs/cc-bridge/

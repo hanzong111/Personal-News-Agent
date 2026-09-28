@@ -1,0 +1,6 @@
+name: model-router
+version: 1.0.0
+description: "Per-message model routing for chat: a Haiku judge labels each incoming message easy or hard; hard turns (e.g. stock analysis) run on Opus with medium effort, easy ones on the default Sonnet. Manual /model or /reasoning choices are left alone."
+author: "local (Hermes project)"
+hooks:
+  - pre_gateway_dispatch

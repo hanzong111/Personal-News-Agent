@@ -1,0 +1,192 @@
+# Industry themes. A holding's `sector` key points here.
+# queries   Google News searches run every scan for sector-level news (goes to the evening digest
+#           unless it also names a holding, in which case it's an immediate alert)
+# keywords  case-insensitive substrings that tag a general-feed headline as belonging to this sector
+# match     Yahoo Finance industry substrings; setup uses them to suggest a sector for a new stock
+#           (first sector in this file that matches wins, so specific ones come first)
+#
+# Only sectors that one of your stocks points to are scanned — the rest is a library to pick from.
+
+sectors:
+  solar:
+    label: Solar / renewable energy
+    match: [Solar, Renewable]
+    queries:
+      - 'Malaysia solar OR "renewable energy" OR LSS OR CRESS OR NETR'
+      - 'Malaysia "battery storage" OR BESS OR "energy transition"'
+      - 'Malaysia "data centre" power OR "data center" electricity'
+    keywords: [solar, renewable, "LSS", CRESS, NETR, "energy transition", BESS, "battery storage",
+               "Energy Commission", "Suruhanjaya Tenaga", "green energy", "data centre", "data center",
+               "corporate green power", CGPP, "net energy metering", "SAC charge"]
+
+  construction:
+    label: Construction / infrastructure / data centres
+    match: [Engineering & Construction, Infrastructure Operations, Conglomerates]
+    queries:
+      - 'Malaysia construction MRT3 OR "Penang LRT" OR "Pan Borneo" OR "data centre" contract'
+      - 'Malaysia infrastructure "Budget 2027" OR "development expenditure"'
+    keywords: [MRT3, "Penang LRT", "Pan Borneo", "construction sector", "contract flow",
+               "infrastructure spending", "development expenditure", "data centre", "data center",
+               "Sabah Sarawak", "construction stocks"]
+
+  healthcare:
+    label: Private healthcare / hospitals
+    match: [Medical Care Facilities, Medical Distribution, Drug Manufacturers, Diagnostics, Health Information]
+    queries:
+      - 'Malaysia "private hospital" OR "medical tariff" OR "healthcare" regulation'
+      - 'Malaysia "medical insurance" premium OR "diagnosis-related group" OR DRG'
+    keywords: ["private hospital", "medical tariff", "medical inflation", "health insurance",
+               "healthcare sector", DRG, "diagnosis-related", "Health Ministry", "medical tourism",
+               "private healthcare", "Rakan KKM"]
+
+  gloves:
+    label: Rubber gloves
+    match: [Medical Instruments & Supplies, Rubber]
+    queries:
+      - 'Malaysia glove makers OR "rubber glove" demand OR ASP'
+    keywords: ["glove", "nitrile", "Top Glove", "Hartalega", "Kossan", "Supermax", "MARGMA", "latex"]
+
+  banking:
+    label: Banking / financial services
+    match: [Banks, Insurance, Capital Markets, Credit Services, Asset Management]
+    queries:
+      - 'Malaysia banks OR "Bank Negara" OR OPR loan growth'
+      - 'Malaysia "net interest margin" OR "asset quality" OR "impaired loans"'
+    keywords: ["Bank Negara", "BNM", "OPR", "overnight policy rate", "loan growth", "net interest margin",
+               "NIM", "banking sector", "deposit rate", "impaired loan", "financing growth"]
+
+  plantation:
+    label: Plantation / palm oil
+    match: [Farm Products, Agricultural]
+    queries:
+      - 'Malaysia "palm oil" OR CPO price OR plantation'
+      - 'Malaysia "palm oil" export OR MPOB stocks OR windfall levy'
+    keywords: ["palm oil", "CPO", "MPOB", "plantation", "FFB", "oil palm", "windfall levy", "EUDR", "biodiesel"]
+
+  technology:
+    label: Technology / semiconductors / EMS
+    match: [Semiconductor, Electronic Components, Specialty Industrial Machinery, Scientific & Technical Instruments,
+            Software, Information Technology, Communication Equipment, Electronics, Computer Hardware]
+    queries:
+      - 'Malaysia semiconductor OR "chip" OR "electronics manufacturing" OR EMS'
+      - 'Malaysia tech stocks OR "data centre" OR AI investment'
+    keywords: ["semiconductor", "chip", "wafer", "OSAT", "EMS", "electronics", "NSS", "National Semiconductor Strategy",
+               "Penang", "tech stocks", "AI", "outsourced semiconductor"]
+
+  reit:
+    label: REITs
+    match: [REIT]
+    queries:
+      - 'Malaysia REIT OR "real estate investment trust" occupancy OR rental OR distribution'
+    keywords: ["REIT", "real estate investment trust", "occupancy rate", "rental reversion", "distribution per unit", "DPU"]
+
+  property:
+    label: Property development
+    match: [Real Estate]
+    queries:
+      - 'Malaysia property developers OR "property market" OR "housing"'
+      - 'Malaysia "new launches" OR "property sales" OR "Johor-Singapore Special Economic Zone"'
+    keywords: ["property market", "property developer", "housing", "new launches", "property sales", "REDA",
+               "JS-SEZ", "Special Economic Zone", "affordable housing", "RTS Link"]
+
+  oil_gas:
+    label: Oil & gas
+    match: [Oil & Gas, Oil]
+    queries:
+      - 'Malaysia Petronas OR "oil and gas" OR "Brent crude" contract'
+      - 'Malaysia O&G OR "Petronas Activity Outlook" OR offshore contract'
+    keywords: ["Petronas", "oil and gas", "O&G", "Brent", "crude oil", "LNG", "upstream", "offshore",
+               "Petronas Activity Outlook", "PETROS", "FPSO"]
+
+  telco:
+    label: Telecommunications
+    match: [Telecom]
+    queries:
+      - 'Malaysia telco OR "5G" OR MCMC OR "Digital Nasional"'
+    keywords: ["telco", "5G", "DNB", "Digital Nasional", "MCMC", "spectrum", "mobile operator", "fibre", "broadband"]
+
+  utilities:
+    label: Utilities / power
+    match: [Utilities]
+    queries:
+      - 'Malaysia electricity tariff OR TNB OR "Energy Commission" OR grid'
+      - 'Malaysia "power plant" OR "water tariff" OR "gas price" utilities'
+    keywords: ["electricity tariff", "base tariff", "Energy Commission", "Suruhanjaya Tenaga", "grid", "power plant",
+               "ICPT", "water tariff", "utilities", "Regulatory Period"]
+
+  consumer:
+    label: Consumer / retail
+    match: [Packaged Foods, Beverages, Retail, Tobacco, Household, Restaurants, Confectioners, Grocery,
+            Department Stores, Apparel, Personal Products, Leisure]
+    queries:
+      - 'Malaysia consumer spending OR retail sales OR "consumer sentiment"'
+      - 'Malaysia SST OR subsidy rationalisation OR minimum wage consumer'
+    keywords: ["consumer spending", "retail sales", "consumer sentiment", "SST", "sales tax", "subsidy rationalisation",
+               "RON95", "minimum wage", "cost of living", "Rahmah"]
+
+  transport:
+    label: Transport / logistics / ports
+    match: [Marine Shipping, Airlines, Airports, Integrated Freight, Trucking, Railroads, Logistics]
+    queries:
+      - 'Malaysia port OR shipping OR logistics OR "freight rates"'
+      - 'Malaysia airline OR airport OR "passenger traffic"'
+    keywords: ["port", "shipping", "container", "TEU", "freight", "logistics", "airline", "airport", "passenger traffic",
+               "MAHB", "Port Klang"]
+
+  gaming:
+    label: Gaming / leisure / tourism
+    match: [Resorts & Casinos, Gambling, Lodging, Travel Services]
+    queries:
+      - 'Malaysia tourism OR "tourist arrivals" OR casino OR "Visit Malaysia 2026"'
+    keywords: ["tourist arrivals", "tourism", "casino", "Genting", "Visit Malaysia", "hotel occupancy", "NFO"]
+
+  materials:
+    label: Industrial materials / metals / chemicals
+    match: [Aluminum, Steel, Chemicals, Building Materials, Metal, Paper, Packaging]
+    queries:
+      - 'Malaysia aluminium OR steel OR "building materials" OR chemicals prices'
+    keywords: ["aluminium", "aluminum", "steel", "cement", "chemicals", "petrochemical", "LME", "building materials"]
+
+  other:
+    label: Other
+    match: []
+    queries: []
+    keywords: []
+
+# Themes that touch every holding (macro). Goes to digest.
+macro:
+  queries:
+    - 'Malaysia "Budget 2027"'
+    - 'Bursa Malaysia KLCI market'
+  keywords: ["Budget 2027", "FBM KLCI", "Bursa Malaysia"]
+
+# Bursa announcement titles containing any of these are dropped as noise.
+announcement_ignore:
+  - "Section 138"
+  - "Sub. S-hldr"
+  - "Substantial Shareholder"
+  - "Dealings in Listed Securities"
+  - "Dealings Outside Closed Period"
+  - "Notice of Shares Buy Back"
+  - "Section 219"
+  - "Changes in Director's Interest"
+  - "Additional Listing Announcement"
+  - "Listing Circular"
+
+# Bursa announcement titles containing any of these are flagged HIGH impact.
+announcement_high:
+  - "Quarterly rpt"
+  - "Quarterly Report"
+  - "Financial Results"
+  - "Dividend"
+  - "Contract"
+  - "Award"
+  - "Material Litigation"
+  - "Profit Guarantee"
+  - "Change in Boardroom"
+  - "Change in Chief Executive"
+  - "Proposed"
+  - "Memorandum of Understanding"
+  - "Joint Venture"
+  - "Reply to Query"
+  - "Unusual Market Activity"
