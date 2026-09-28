@@ -6,13 +6,16 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-28
+
 ### Added
 - Optional **Jev mode** (TypeSafe's Jev model): catches repeat stories across outlets and languages,
   sends broker calls and stock lists to the digest instead of alerting, and types stories the keyword
   rules can't. Choose it in setup step 5 or with `setup set jev=on`; the built-in rules stay the
   default and the fallback. Benchmark in `docs/benchmarks/jev.md`, scripts in `benchmarks/jev/`.
-
-### Added
+- In Jev mode, Jev also stands in for the Haiku relevance judge on news the keyword rules can't
+  place (on one evening's 194 items: US$0.006 vs $0.030, 8 s vs 34 s; items Jev can't answer still
+  go to Haiku), and repeats are checked against the past week of alerts instead of 48 hours.
 - Jev mode marks follow-ups: an alert that updates a story you were alerted about in the past week
   gets a "🔄 Update on: <earlier headline>" line.
 
@@ -54,5 +57,6 @@ First public release.
 - Versioning: Semantic Versioning from the `VERSION` file, `scripts/bump_version.py` to cut a
   release, and a workflow that tags `vX.Y.Z` and publishes the GitHub Release when `main` changes.
 
-[Unreleased]: https://github.com/hanzong111/TickerPigeon/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/hanzong111/TickerPigeon/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/hanzong111/TickerPigeon/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/hanzong111/TickerPigeon/releases/tag/v1.0.0
