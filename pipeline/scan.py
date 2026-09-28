@@ -74,10 +74,12 @@ def _jev_relevance(cfg: config.Config, alerts: list[dict]) -> tuple[list[dict], 
     return keep, demote
 
 
-def _jev_repeats(alerts: list[dict], recent: list[dict]) -> dict[str, str]:
-    """Jev on: {item id: title of the story it repeats}. Compares each alert with the recent alerts for the
-    same stock and with earlier items in this batch. Where Jev gives no answer, the word-overlap rule
-    decides that pair."""
+def _jev_repeats(alerts: list[dict], recent: list[dict]) -> tuple[dict[str, str], dict[str, str]]:
+    """Jev on: ({item id: title it repeats}, {item id: title of the earlier alert it updates}).
+    Compares each alert with the recent alerts for the same stock and with earlier items in this batch.
+    A repeat is the same event (dropped); an update is a follow-up or a new stage of a story you were
+    already alerted about (kept, marked 🔄). Where Jev gives no answer, the word-overlap rule decides
+    whether that pair is a repeat."""
     order = sorted(alerts, key=lambda i: i.get("published") or "")
     pairs, meta = [], []
     for n, item in enumerate(order):
@@ -91,12 +93,17 @@ def _jev_repeats(alerts: list[dict], recent: list[dict]) -> dict[str, str]:
                 pairs.append((item, prev))
                 meta.append((item["id"], prev["id"]))
     repeats: dict[str, str] = {}
-    for (item_id, prev_id), (item, other), score in zip(meta, pairs, jev.same_event(pairs, role="repeat")):
+    updates: dict[str, tuple[float, str]] = {}
+    scores = jev.same_event([(other, item) for item, other in pairs], role="repeat")    # (earlier, later)
+    for (item_id, prev_id), (item, other), ans in zip(meta, pairs, scores):
         if item_id in repeats or (prev_id and prev_id in repeats):   # never chain onto a dropped repeat
             continue
-        if (score > jev.SAME_AT) if score is not None else bool(is_repeat(item, [other])):
+        if jev.is_repeat(ans) if ans is not None else bool(is_repeat(item, [other])):
             repeats[item_id] = other["title"]
-    return repeats
+        elif prev_id is None and ans is not None and jev.is_update(ans):          # only stories already sent
+            if ans[0] > updates.get(item_id, (0.0, ""))[0]:
+                updates[item_id] = (ans[0], other["title"])
+    return repeats, {k: title for k, (_, title) in updates.items() if k not in repeats}
 
 
 def _emit(text: str) -> None:
@@ -179,10 +186,10 @@ def main(argv=None):
                 sold_ids.append(item["id"])
             else:
                 live.append(item)
-        use_jev, jev_repeats = jev.enabled(), {}
+        use_jev, jev_repeats, jev_updates = jev.enabled(), {}, {}
         if use_jev:
             live, demoted = _jev_relevance(cfg, live)
-            jev_repeats = _jev_repeats(live, recent)
+            jev_repeats, jev_updates = _jev_repeats(live, recent)
         for item in live:
             rep = ({"title": jev_repeats[item["id"]]} if item["id"] in jev_repeats else None) if use_jev \
                 else is_repeat(item, recent)
@@ -193,6 +200,11 @@ def main(argv=None):
             else:
                 kept_alerts.append(item)
         alerts = kept_alerts
+        for item in alerts:
+            if item["id"] in jev_updates:
+                item["update_of"] = jev_updates[item["id"]]
+                log.info("jev: update to an earlier alert", codes=",".join(item["codes"]), title=item["title"][:70],
+                         earlier=item["update_of"][:60])
         if not a.dry_run and not a.force_recent:
             memory.advance(repeat_ids, "dropped", "repeat_recent", run_id)
             memory.advance(stale_ids, "dropped", "stale", run_id)

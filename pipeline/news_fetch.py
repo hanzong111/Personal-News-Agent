@@ -153,10 +153,12 @@ def cluster(items: list[dict]) -> list[dict]:
         # Jev decides each candidate pair; it also catches the same story told in another language, which
         # shares only names. Pairs it can't answer keep the rule's verdict.
         loose = sorted(loose, key=lambda p: -p[3])[:JEV_MAX_PAIRS]
-        pair_items = [({"title": items[i]["title"], "src": items[i].get("src", "")},
-                       {"title": items[j]["title"], "src": items[j].get("src", "")}) for i, j, _, _ in loose]
+        side = lambda k: {"title": items[k]["title"]}
+        pair_items = [(side(i), side(j)) if items[i]["ts"] <= items[j]["ts"] else (side(j), side(i))
+                      for i, j, _, _ in loose]                                        # (earlier, later)
         scores = jev.same_event(pair_items, role="cluster")
-        links = [(i, j) for (i, j, rule, _), s in zip(loose, scores) if (s > jev.SAME_AT if s is not None else rule)]
+        # same story = one entry in the index, whether or not the later report adds something
+        links = [(i, j) for (i, j, rule, _), s in zip(loose, scores) if (s[0] > jev.SAME_AT if s is not None else rule)]
         log.info("jev clustering", candidates=len(loose), linked=len(links), rule_would_link=len(rule_pairs))
     for i, j in links:
         parent[find(i)] = find(j)

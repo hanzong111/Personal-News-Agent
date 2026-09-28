@@ -12,10 +12,17 @@ All notable changes to this project are listed here. The format follows
   rules can't. Choose it in setup step 5 or with `setup set jev=on`; the built-in rules stay the
   default and the fallback. Benchmark in `docs/benchmarks/jev.md`, scripts in `benchmarks/jev/`.
 
+### Added
+- Jev mode marks follow-ups: an alert that updates a story you were alerted about in the past week
+  gets a "🔄 Update on: <earlier headline>" line.
+
 ### Fixed
-- Jev mode no longer treats a deal reaching a new stage (agreement signed, deal completed, approval,
-  delay, value change, charges filed) as a repeat, so those updates still alert. Tested on 11 cases
-  (10/10 correct) and re-scored against the 173 benchmark repeats (164 still caught).
+- Jev mode no longer drops updates as repeats. The repeat check now asks two questions per pair,
+  "same story?" and "did something happen after the earlier report?" (agreement signed, deal
+  completed, delay, value change, charges filed, …). Same story with nothing new = repeat (dropped);
+  same story with something new = update (alerts, 🔄). Checked on 12 update/repeat cases (all
+  correct) and re-scored on the 173 benchmark repeats: 149 still dropped, 22 now alert as updates
+  (mostly real developments), 2 not the same story.
 
 ### Changed
 - Renamed to **TickerPigeon**, with a new logo, the mascot Pip, a README banner and a dashboard

@@ -65,18 +65,46 @@ class ScanTest(unittest.TestCase):
         batch = [_item("x", "IJM secures RM1 billion highway job", ["3336"], "2026-09-28T10:00:00+08:00"),
                  _item("y", "KPJ opens new hospital in Johor", ["5878"], "2026-09-28T10:05:00+08:00"),
                  _item("z", "KPJ launches Johor hospital", ["5878"], "2026-09-28T10:30:00+08:00")]
-        same = {("IJM secures RM1 billion highway job", "IJM bags RM1bn highway contract"): 2.0,
-                ("KPJ launches Johor hospital", "KPJ opens new hospital in Johor"): 1.9}
+        same = {("IJM secures RM1 billion highway job", "IJM bags RM1bn highway contract"): (0.95, 0.1),
+                ("KPJ launches Johor hospital", "KPJ opens new hospital in Johor"): (0.95, 0.1)}
         with patch.object(jev, "same_event",
-                          side_effect=lambda pairs, role="": [same.get((a["title"], b["title"]), 0.1) for a, b in pairs]):
-            rep = scan._jev_repeats(batch, recent)
+                          side_effect=lambda pairs, role="": [same.get((later["title"], earlier["title"]), (0.1, 0.5)) for earlier, later in pairs]):
+            rep, upd = scan._jev_repeats(batch, recent)
         self.assertEqual({"x": "IJM bags RM1bn highway contract", "z": "KPJ opens new hospital in Johor"}, rep)
+        self.assertEqual({}, upd)
 
     def test_pairs_jev_cannot_answer_fall_back_to_the_word_rule(self):
         recent = [{"title": "IJM wins RM1bn highway job in Perak", "codes": ["3336"]}]
         batch = [_item("x", "IJM wins RM1bn highway job in Perak state", ["3336"])]
         with patch.object(jev, "same_event", side_effect=lambda pairs, role="": [None] * len(pairs)):
-            self.assertIn("x", scan._jev_repeats(batch, recent))                 # rule: word overlap >= 0.5
+            self.assertIn("x", scan._jev_repeats(batch, recent)[0])              # rule: word overlap >= 0.5
+
+
+class UpdateLabelTest(unittest.TestCase):
+    def test_follow_ups_to_earlier_alerts_are_kept_and_labelled(self):
+        from agents.renderer import render_alert
+        recent = [{"title": "IJM wins RM1bn highway job", "codes": ["3336"]}]
+        batch = [_item("u", "IJM signs formal agreement for RM1bn highway job", ["3336"]),
+                 _item("n", "IJM Q2 profit rises 18%", ["3336"], "2026-09-28T11:00:00+08:00")]
+        scores = {"IJM signs formal agreement for RM1bn highway job": (0.9, 0.8), "IJM Q2 profit rises 18%": (0.1, 0.5)}
+        with patch.object(jev, "same_event", side_effect=lambda pairs, role="": [scores[later["title"]] for earlier, later in pairs]):
+            rep, upd = scan._jev_repeats(batch, recent)
+        self.assertEqual({}, rep)                                              # an update is not dropped
+        self.assertEqual({"u": "IJM wins RM1bn highway job"}, upd)            # …it is labelled
+        batch[0].update(update_of=upd["u"], url="https://example.com/a")
+        verdict = {"keep": True, "type": "contract", "risk": False, "sentiment": "pos", "headline": "Agreement signed",
+                   "summary": "", "why": ""}
+        text = render_alert(config.load(), batch[:1], {"u": verdict}, {})
+        self.assertIn("🔄 Update on: IJM wins RM1bn highway job", text)
+
+    def test_a_repeat_is_never_also_labelled_an_update(self):
+        recent = [{"title": "IJM wins RM1bn highway job", "codes": ["3336"]},
+                  {"title": "IJM bags RM1bn highway contract", "codes": ["3336"]}]
+        batch = [_item("x", "IJM secures RM1 billion highway job", ["3336"])]
+        with patch.object(jev, "same_event", side_effect=lambda pairs, role="": [(0.9, 0.8), (0.95, 0.1)]):
+            rep, upd = scan._jev_repeats(batch, recent)
+        self.assertIn("x", rep)
+        self.assertEqual({}, upd)
 
 
 class ClusterTest(unittest.TestCase):
@@ -94,7 +122,7 @@ class ClusterTest(unittest.TestCase):
             scores = []
             for a, b in pairs:
                 both = {a["title"][:5], b["title"][:5]}
-                scores.append(2.0 if both == {"Siti ", "Ister"} else 0.2)
+                scores.append((0.95, 0.1) if both == {"Siti ", "Ister"} else (0.1, 0.5))
             return scores
         with patch.object(jev, "enabled", return_value=True), patch.object(jev, "same_event", side_effect=fake):
             out = news_fetch.cluster(items)

@@ -104,6 +104,10 @@ one week of real news ([full benchmark](docs/benchmarks/jev.md)):
 | Stories typed as "other" | 189 of 256 | 61 of 256 |
 | Running cost | — | about US$1 a month |
 
+With Jev on, an alert that follows up a story you've already had (a contract signed, a deal
+completed, a probe going to court) comes through marked **🔄 Update on: …**, while plain copies from
+other outlets are dropped.
+
 Turn it on in setup (step 5), or later with `python -m pipeline.setup set jev=on`. You'll need a
 TypeSafe API key from [console.typesafe.ai](https://console.typesafe.ai/), added to `~/.hermes/.env`
 as `TYPESAFE_API_KEY=…`. If Jev is off, has no key, or a call fails, TickerPigeon uses its built-in

@@ -24,7 +24,8 @@ log = _get_log("jev")
 
 MODEL = os.environ.get("JEV_MODEL", "jev-1.13.0")    # pinned: the thresholds below were measured on it
 PRICE_PER_TOKEN = 0.042 / 1_000_000                  # USD per input token; output tokens are free
-SAME_AT = 1.5          # same_event score above this = same event (0 different, 1 related, 2 same)
+SAME_AT = 0.5          # same_event: P(same story) above this = the same underlying event
+NEW_AT = 0.5           # same_event: P(new development) at/above this = an update (alerts, marked 🔄), else a repeat
 CONFIDENT = 0.7        # below this, a Choice answer is not trusted and the caller keeps its rule
 WORKERS = 8
 
@@ -117,22 +118,24 @@ def _ask_many(requests: list[tuple[object, dict]], role: str) -> list[dict | Non
 # ---------------------------------------------------------------- questions (wording measured in the benchmark)
 
 def _questions():
-    from typesafe_sdk import Choice, Score
-    same = Score(
-        instructions="Do `headline_a` and `headline_b` report the same news event?",
-        criteria=[
-            "Different events: they are about different happenings, even if they share a company, sector or "
-            "topic. For example two separate contracts won by the same company, results for different "
-            "quarters, or two unrelated policy announcements.",
-            "Related but not the same: one is a follow-up, reaction, analysis, market move or a later stage "
-            "of the other's event. A deal or case moving to a new stage counts as related: an agreement "
-            "signed, a deal completed, an approval or rejection, a cancellation or delay, a changed value, "
-            "charges filed, a court decision. For example 'X wins RM2bil contract' and 'X signs formal "
-            "agreement for RM2bil contract', or 'X to acquire land' and 'X completes land acquisition'.",
-            "Same event: both report the same happening at the same stage, possibly from different outlets, "
-            "in different words or in different languages, and neither adds a new development. For example "
-            "'X bags RM2bil job' and 'X secures RM2 billion contract from Y'.",
-        ],
+    from typesafe_sdk import Choice, Noul
+    same_story = Noul(
+        instructions="Is `later` about the same news event as `earlier`: the same deal, contract, case, "
+                     "announcement, incident or result, even if reported differently or at a later stage?",
+        criteria={"true": "Same underlying event, for example the same contract won, signed or revised, the same "
+                          "land deal announced or completed, the same investigation opened or taken to court, the "
+                          "same results reported by another outlet or in another language.",
+                  "false": "A different event, even with the same company, sector or topic: another contract, "
+                           "another quarter's results, an unrelated policy, a general market or sector wrap-up."},
+    )
+    new_development = Noul(
+        instructions="Does `later` report something that happened after the event in `earlier`?",
+        criteria={"true": "A later development: a new stage (agreement signed, deal completed, approval or rejection, "
+                          "delay or cancellation, charges filed, court decision), a changed value or date, or a new "
+                          "reaction such as an analyst rating change or a share-price move on the news.",
+                  "false": "The same event retold: another outlet's report, different wording or verbs (wins, bags, "
+                           "secures, awarded), extra background from the same announcement, rounded or converted "
+                           "figures, spelling differences, or another language."},
     )
     role = Choice(
         instructions="In `headline`, what role does the listed company described in `company` play?",
@@ -166,11 +169,11 @@ def _questions():
             "other": "None of the above.",
         },
     )
-    return same, role, story_type
+    return (same_story, new_development), role, story_type
 
 
 def _side(item: dict) -> dict:
-    out = {"title": item.get("title", ""), "source": item.get("source") or item.get("src") or ""}
+    out = {"title": item.get("title", "")}      # no source name: it only added noise to the judgment
     if item.get("summary"):
         out["summary"] = str(item["summary"])[:240]
     return out
@@ -178,13 +181,23 @@ def _side(item: dict) -> dict:
 
 # ---------------------------------------------------------------- judgments
 
-def same_event(pairs: list[tuple[dict, dict]], role: str = "same_event") -> list[float | None]:
-    """Expected score 0..2 per pair (> SAME_AT = same event), or None."""
+def same_event(pairs: list[tuple[dict, dict]], role: str = "same_event") -> list[tuple[float, float] | None]:
+    """Per (earlier, later) pair: (P(same story), P(new development)), or None.
+    Repeat = same story and nothing new; update = same story with something new. See is_repeat()/is_update()."""
     if not pairs or not enabled():
         return [None] * len(pairs)
-    same, _, _ = _questions()
-    answers = _ask_many([({"headline_a": _side(a), "headline_b": _side(b)}, {"same": same}) for a, b in pairs], role)
-    return [a["same"]["score"] if a else None for a in answers]
+    (same_story, new_dev), _, _ = _questions()
+    answers = _ask_many([({"earlier": _side(a), "later": _side(b)}, {"same": same_story, "new": new_dev})
+                         for a, b in pairs], role)
+    return [(a["same"]["noul"], a["new"]["noul"]) if a else None for a in answers]
+
+
+def is_repeat(ans: tuple[float, float]) -> bool:
+    return ans[0] > SAME_AT and ans[1] < NEW_AT
+
+
+def is_update(ans: tuple[float, float]) -> bool:
+    return ans[0] > SAME_AT and ans[1] >= NEW_AT
 
 
 def roles(pairs: list[tuple[str, object]]) -> list[tuple[str, float] | None]:
