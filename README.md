@@ -1,13 +1,16 @@
-<h1 align="center">Personal News Agent</h1>
-
 <p align="center">
-  Your own Bursa Malaysia newsletter: alerts when news names a stock you hold or watch,<br>
-  delivered to Telegram, Discord, Slack, WhatsApp or any chat app Hermes Agent supports.
+  <img src="docs/brand/readme-banner.jpg" alt="TickerPigeon. Your stocks. Your news. Your chat. News about the stocks you hold, delivered to your chat." width="820">
 </p>
 
 <p align="center">
-  <a href="https://github.com/hanzong111/Personal-News-Agent/actions/workflows/ci.yml"><img src="https://github.com/hanzong111/Personal-News-Agent/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/hanzong111/Personal-News-Agent/releases"><img src="https://img.shields.io/github/v/release/hanzong111/Personal-News-Agent" alt="Latest release"></a>
+  <b>Your personal stock-news messenger for Bursa Malaysia.</b><br>
+  Alerts when news names a stock you hold or watch, delivered to Telegram, Discord, Slack,<br>
+  WhatsApp or any chat app Hermes Agent supports.
+</p>
+
+<p align="center">
+  <a href="https://github.com/hanzong111/TickerPigeon/actions/workflows/ci.yml"><img src="https://github.com/hanzong111/TickerPigeon/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/hanzong111/TickerPigeon/releases"><img src="https://img.shields.io/github/v/release/hanzong111/TickerPigeon" alt="Latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white" alt="Python 3.10+">
   <a href="https://github.com/NousResearch/hermes-agent"><img src="https://img.shields.io/badge/built%20on-Hermes%20Agent-7b3fe4" alt="Built on Hermes Agent"></a>
@@ -31,10 +34,10 @@
 > source before you act. Some news sites limit automated access in their terms. Read the
 > [disclaimer](#disclaimer) before you run it.
 
-A self-hosted agent that watches the news for the Bursa Malaysia stocks you hold, a watchlist of
-stocks you're considering, and the sectors they belong to. It pushes short, skimmable briefs to
-your chat app, so you don't have to go looking. It sends a message only when news names one of
-your stocks or touches its sector. It never sends "quiet day" filler.
+TickerPigeon is an open-source agent that follows the news about the Bursa Malaysia stocks you
+hold, a watchlist of stocks you're considering, and the sectors they belong to. Pip, our courier
+pigeon, brings short, skimmable briefs to your chat app, so you don't have to go looking. Pip only
+flies when news names one of your stocks or touches its sector. There's no "quiet day" filler.
 
 ## Features
 
@@ -44,6 +47,8 @@ your stocks or touches its sector. It never sends "quiet day" filler.
 | 🌆 **Evening digest** | 18:30 Mon–Fri. Skipped if empty. | Sector and market news for the industries you hold (policy, commodities, contract flow, the Budget…), with the stocks each item touches. |
 | 📅 **Weekly review** | Friday 20:00 | Each holding's week against the FBM KLCI, what moved and why, what to watch next week, suggestions and cautions. |
 | 🗞️ **Malaysia headlines** | 09:00 / 14:00 / 21:00 | A tiered index of general Malaysian news. Reply "more politics" for the full list. |
+
+<img src="docs/brand/pip-reading.webp" alt="" width="150" align="right">
 
 - **Guided setup**, in the terminal or by sending `/setup` to your bot: search stocks by name
   or code, add a watchlist, pick your chat app, and choose which messages arrive when.
@@ -86,15 +91,17 @@ flowchart LR
 On Linux, macOS or Windows (in WSL2), run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hanzong111/Personal-News-Agent/main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hanzong111/TickerPigeon/main/bootstrap.sh | bash
 ```
+
+<img src="docs/brand/pip-waving.webp" alt="" width="150" align="right">
 
 This installs everything that's missing and walks you through setup. It's safe to run again:
 finished steps are skipped and nothing is duplicated. What it touches:
 
 - **Asks first:** installing system packages with `sudo`, changing the time zone, and installing
   the Hermes gateway as a user service (systemd or launchd).
-- **Writes:** the project folder (default `~/Personal-News-Agent`), Hermes Agent in `~/.hermes`
+- **Writes:** the project folder (default `~/TickerPigeon`), Hermes Agent in `~/.hermes`
   (via [its official installer](https://hermes-agent.nousresearch.com)), and this project's
   wrapper scripts and chat skills in `~/.hermes/scripts` and `~/.hermes/skills`.
 - **Downloads from:** GitHub (this repo), the Hermes installer site, your Linux distribution or
@@ -105,14 +112,14 @@ finished steps are skipped and nothing is duplicated. What it touches:
 **Prefer not to pipe to bash?** Clone it, read the script, then run it:
 
 ```bash
-git clone https://github.com/hanzong111/Personal-News-Agent.git
-cd Personal-News-Agent
+git clone https://github.com/hanzong111/TickerPigeon.git
+cd TickerPigeon
 less bootstrap.sh
 ./bootstrap.sh
 ```
 
 Options: `--yes` (answer yes to install questions), `--dir DIR` (where to clone, default
-`~/Personal-News-Agent`), `--deliver discord` (pre-select your chat app), `--with-router` (install
+`~/TickerPigeon`), `--deliver discord` (pre-select your chat app), `--with-router` (install
 the chat model router), `--skip-hermes-setup`.
 
 ## Prerequisites
@@ -154,7 +161,7 @@ Yahoo Finance, Anthropic and your chat app.
 ```bash
 curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash   # Hermes Agent
 hermes setup                                                         # AI provider + chat app
-git clone https://github.com/hanzong111/Personal-News-Agent.git && cd Personal-News-Agent
+git clone https://github.com/hanzong111/TickerPigeon.git && cd TickerPigeon
 ./hermes/install.sh                                                  # venv, deps, wrappers, skills
 ./hermes/cron/create-jobs.sh                                         # scheduled jobs
 hermes gateway install && hermes gateway start                       # scheduler as a service
@@ -326,6 +333,8 @@ easy ones run on your default model. Install it with `./hermes/install.sh --with
 
 ### From chat
 
+<img src="docs/brand/pip-flying.webp" alt="" width="150" align="right">
+
 Just talk to your Hermes bot. The `bursa-setup`, `bursa-portfolio` and `malaysia-news` skills handle:
 
 - "/setup": the onboarding conversation (stocks, watchlist, messages and times)
@@ -405,7 +414,7 @@ tests/              pytest suite
 ## Updating
 
 ```bash
-cd ~/Personal-News-Agent
+cd ~/TickerPigeon
 ./bootstrap.sh          # pulls the latest code and refreshes the copies in ~/.hermes
 ```
 
@@ -415,19 +424,21 @@ stocks, preferences and news history in `data/` are never touched by an update.
 Releases follow [Semantic Versioning](https://semver.org/): a major version (2.0.0) means a
 breaking change, so read its notes first. Check your version with
 `./.venv/bin/python -m pipeline.setup --version`. See [CHANGELOG.md](CHANGELOG.md) or the
-[releases page](https://github.com/hanzong111/Personal-News-Agent/releases) for what changed.
+[releases page](https://github.com/hanzong111/TickerPigeon/releases) for what changed.
 
 ## Uninstalling
 
 ```bash
 ./hermes/uninstall.sh   # removes this project's cron jobs, scripts, skills and plugin from ~/.hermes
-rm -rf ~/Personal-News-Agent
+rm -rf ~/TickerPigeon
 ```
 
 Hermes Agent itself stays installed. Remove it with its own uninstaller if you don't use it for
 anything else.
 
 ## FAQ
+
+<img src="docs/brand/pip-quiet.webp" alt="" width="150" align="right">
 
 **What does it cost to run?** On the author's install (6 holdings, every message type on), the
 scheduled messages cost about **US$0.45 a day, roughly $13.50 a month** at Anthropic's list prices.
@@ -493,7 +504,8 @@ pull request into `develop`. `main` holds releases and only the maintainer merge
 
 ## License and credits
 
-[MIT](LICENSE) © 2026 hanzong111.
+[MIT](LICENSE) © 2026 hanzong111. The TickerPigeon name, logo and Pip artwork are in
+[`docs/brand/`](docs/brand/).
 
 Built on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by Nous Research, with
 [Claude](https://www.anthropic.com/claude) models by Anthropic. Market data comes from Yahoo

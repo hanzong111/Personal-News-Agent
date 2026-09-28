@@ -1,0 +1,11 @@
+/* TickerPigeon brand palette */
+:root {
+  --tp-navy: #18263E;
+  --tp-slate: #7B91B9;
+  --tp-teal: #56B7AF;
+  --tp-orange: #F2A65A;
+  --tp-ivory: #FAF8F4;
+  --tp-text: var(--tp-navy);
+  --tp-background: var(--tp-ivory);
+  --tp-font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}

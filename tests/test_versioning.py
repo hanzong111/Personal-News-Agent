@@ -22,8 +22,8 @@ CHANGELOG = """# Changelog
 
 First public release.
 
-[Unreleased]: https://github.com/hanzong111/Personal-News-Agent/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/hanzong111/Personal-News-Agent/releases/tag/v1.0.0
+[Unreleased]: https://github.com/hanzong111/TickerPigeon/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/hanzong111/TickerPigeon/releases/tag/v1.0.0
 """
 
 
@@ -50,8 +50,8 @@ class BumpTest(unittest.TestCase):
     def test_changelog_moves_unreleased_notes_under_new_version(self):
         out = bump_version.changelog(CHANGELOG, "1.0.0", "1.1.0", "2026-10-15")
         self.assertIn("## [Unreleased]\n\n## [1.1.0] - 2026-10-15\n\n### Added\n- Discord threads.", out)
-        self.assertIn("[Unreleased]: https://github.com/hanzong111/Personal-News-Agent/compare/v1.1.0...HEAD", out)
-        self.assertIn("[1.1.0]: https://github.com/hanzong111/Personal-News-Agent/compare/v1.0.0...v1.1.0", out)
+        self.assertIn("[Unreleased]: https://github.com/hanzong111/TickerPigeon/compare/v1.1.0...HEAD", out)
+        self.assertIn("[1.1.0]: https://github.com/hanzong111/TickerPigeon/compare/v1.0.0...v1.1.0", out)
         self.assertEqual(1, len(re.findall(r"^\[Unreleased\]: ", out, re.M)))
 
     def test_refuses_an_empty_release(self):
