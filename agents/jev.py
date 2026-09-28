@@ -124,12 +124,14 @@ def _questions():
             "Different events: they are about different happenings, even if they share a company, sector or "
             "topic. For example two separate contracts won by the same company, results for different "
             "quarters, or two unrelated policy announcements.",
-            "Related but not the same: one is a follow-up, reaction, analysis, market move or later "
-            "development of the other's event. For example 'X wins RM2bil contract' and 'Analysts raise "
-            "target price for X after contract win'.",
-            "Same event: both report the same happening, possibly from different outlets, in different "
-            "words or in different languages. For example 'X bags RM2bil job' and 'X secures RM2 billion "
-            "contract from Y'.",
+            "Related but not the same: one is a follow-up, reaction, analysis, market move or a later stage "
+            "of the other's event. A deal or case moving to a new stage counts as related: an agreement "
+            "signed, a deal completed, an approval or rejection, a cancellation or delay, a changed value, "
+            "charges filed, a court decision. For example 'X wins RM2bil contract' and 'X signs formal "
+            "agreement for RM2bil contract', or 'X to acquire land' and 'X completes land acquisition'.",
+            "Same event: both report the same happening at the same stage, possibly from different outlets, "
+            "in different words or in different languages, and neither adds a new development. For example "
+            "'X bags RM2bil job' and 'X secures RM2 billion contract from Y'.",
         ],
     )
     role = Choice(
