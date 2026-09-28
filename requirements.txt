@@ -1,4 +1,4 @@
-PyYAML>=6.0
+PyYAML>=6.0.3
 curl_cffi>=0.16      # Chrome-impersonating HTTP client (Bursa and some news sites are Cloudflare-gated)
 # Optional: only if you set AGENT_BACKEND=anthropic instead of routing LLM calls through Hermes
 # anthropic
