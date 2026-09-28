@@ -28,7 +28,7 @@ This page compares the two on the same stored news.
 | Capability | Original workflow | With Jev |
 |---|---|---|
 | **Duplicate alerts delivered** | 3 extra alerts in 8 days: one contract story alerted 3 times in one afternoon, one land deal twice | Replaying the triple, Jev keeps the first and drops the 2 repeats (0.6 s) |
-| **Repeat detection, stock news** (600 candidate pairs) | Word rule merges 56 pairs | Finds 173 same-event pairs: **128 the rule missed**, and it separates 11 the rule merged wrongly (e.g. "…this Tuesday" / "…this Thursday") |
+| **Repeat detection, stock news** (600 candidate pairs) | Word rule merges 56 pairs | Finds 173 same-event pairs: **128 the rule missed**. It also separates 11 pairs the rule merged: 7 were really different stories (e.g. "…this Tuesday" / "…this Thursday"), 1 was the same story and Jev missed it, 3 are debatable |
 | **Repeat detection, Malaysia headlines** (120 headlines) | 102 stories | **75 stories**, including the same story in English and Malay, which word overlap can't match |
 | **Relevance: stock is the subject** (94 pairs) | 4 regexes | With a 0.7 confidence gate: **16 fixes, 0 regressions**. Broker calls ("RHB Turns Bearish On CPO…") and stock lists stop being treated as company news. The Sonnet briefer already dropped most of the lists later; Jev drops them before that paid step |
 | **Story type** (256 items) | Keyword rules put 189 in "other" | Jev puts 61 in "other" and types the rest. In the 30 most confident disagreements with the Claude labels: Jev better in 20, Claude in 7 (5 were land leases, fixed since), 3 judgment calls |
