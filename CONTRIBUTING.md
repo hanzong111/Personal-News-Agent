@@ -15,6 +15,25 @@ get reviewed fastest.
 - **Add a news source**: add an adapter to `pipeline/fetchers.py` that returns the normalised item
   dict described at the top of that file. It needs a test and a note on the source's terms.
 
+## Branches
+
+| Branch | What it is | Who writes to it |
+|---|---|---|
+| `main` | Released code. What `bootstrap.sh` installs. | Only the maintainer, by merging `develop` when a release is ready |
+| `develop` | The next release, where all work lands | Pull requests from feature branches |
+| `feature/…`, `fix/…`, `docs/…` | One change each | You |
+
+```bash
+git switch develop && git pull
+git switch -c feature/short-name        # or fix/…, docs/…
+# … commit …
+git push -u origin feature/short-name   # then open a pull request into develop
+```
+
+Pull requests into `main` are closed or retargeted, and CI fails them unless they come from
+`develop`. If you fork, branch from your fork's `develop` and open the PR against this repo's
+`develop`.
+
 ## Development setup
 
 ```bash
@@ -55,6 +74,7 @@ dependencies without a good reason.
 
 ## Pull requests
 
+- Based on and targeting `develop`, never `main`.
 - One topic per PR, with tests for behaviour changes.
 - `python -m pytest -q` and `shellcheck -S warning bootstrap.sh hermes/**/*.sh` pass.
 - Update the README when you change a command, a setting or a default.

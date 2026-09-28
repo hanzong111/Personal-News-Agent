@@ -476,7 +476,8 @@ at once instead of waiting for its usual time, and scans only alert on stories n
 
 ## Contributing
 
-Bug reports, sector improvements and new sources are welcome. See
+Bug reports, sector improvements and new sources are welcome. Branch from `develop` and open your
+pull request into `develop`. `main` holds releases and only the maintainer merges into it. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup and ground rules, and
 [SECURITY.md](SECURITY.md) to report a vulnerability privately.
 

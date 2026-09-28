@@ -6,6 +6,11 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Branch model: work happens on `feature/…` branches merged into `develop`; `main` holds releases
+  and only the maintainer merges into it. CI runs on both and rejects PRs into `main` from
+  anything but `develop`. Dependabot targets `develop`.
+
 ## [0.1.0] - 2026-09-28
 
 First public release.
