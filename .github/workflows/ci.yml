@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      # No network, no Hermes, no API keys: the suite uses fixtures and fakes.
+      - run: python -m pytest -q
+
+  shell:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck -S warning bootstrap.sh hermes/install.sh hermes/uninstall.sh hermes/cron/create-jobs.sh hermes/scripts/*.sh
+      - run: for f in bootstrap.sh hermes/install.sh hermes/uninstall.sh hermes/cron/create-jobs.sh hermes/scripts/*.sh; do bash -n "$f"; done

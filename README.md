@@ -1,60 +1,84 @@
-# Personal News Agent — Bursa Malaysia
+<h1 align="center">Personal News Agent</h1>
 
-A self-hosted news agent for **Bursa Malaysia** investors, built on
-[Hermes Agent](https://github.com/NousResearch/hermes-agent). It watches the news for the stocks
-you hold, a watchlist of stocks you're considering, and the sectors they belong to. Short,
-skimmable briefs are pushed to your chat app (Telegram, Discord, Feishu, and others). You don't
-need to ask.
+<p align="center">
+  Your own Bursa Malaysia newsletter: alerts when news names a stock you hold or watch,<br>
+  delivered to Telegram, Discord, Slack, WhatsApp or any chat app Hermes Agent supports.
+</p>
 
-A short setup, either in the terminal or by chatting with the bot, asks for your stocks, your chat
-app, and which messages you want at what times. That turns it into your own newsletter.
+<p align="center">
+  <a href="https://github.com/hanzong111/Personal-News-Agent/actions/workflows/ci.yml"><img src="https://github.com/hanzong111/Personal-News-Agent/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white" alt="Python 3.10+">
+  <a href="https://github.com/NousResearch/hermes-agent"><img src="https://img.shields.io/badge/built%20on-Hermes%20Agent-7b3fe4" alt="Built on Hermes Agent"></a>
+</p>
 
-It sends a message only when news names one of your holdings or touches its sector. It never
-sends "quiet day" filler.
+<p align="center">
+  <a href="#quick-install">Install</a> ·
+  <a href="#configuration">Configure</a> ·
+  <a href="#usage">Use</a> ·
+  <a href="#faq">FAQ</a> ·
+  <a href="#disclaimer">Disclaimer</a> ·
+  <a href="CONTRIBUTING.md">Contribute</a>
+</p>
 
-> Research aid only, not financial advice.
+<p align="center">
+  <img src="docs/images/example-messages.png" alt="An instant alert and an evening digest in a chat app (sample data, fictional companies)" width="820">
+</p>
 
-## What you get
+> [!IMPORTANT]
+> This is a research aid, **not financial advice**. AI summaries can be wrong, so check the linked
+> source before you act. Some news sites limit automated access in their terms. Read the
+> [disclaimer](#disclaimer) before you run it.
 
-| Message | When | Content |
+A self-hosted agent that watches the news for the Bursa Malaysia stocks you hold, a watchlist of
+stocks you're considering, and the sectors they belong to. It pushes short, skimmable briefs to
+your chat app, so you don't have to go looking. It sends a message only when news names one of
+your stocks or touches its sector. It never sends "quiet day" filler.
+
+## Features
+
+| Message | When (defaults) | What's in it |
 |---|---|---|
-| **Holding alert** | Every 30 min, 08:00–18:30, Mon–Fri. Silent if nothing is new. | News or Bursa announcements naming a stock you hold (or watch, marked 👀), with sentiment, a 1–2 line summary, why it matters, the link and today's price. |
-| **Evening digest** | 18:30 Mon–Fri. Skipped if empty. | Sector and macro news for the industries you hold (policy, commodity, contract flow, Budget…), with the holdings each item touches. |
-| **Weekly review** | Friday 20:00 | Each holding's week against the FBM KLCI, what moved and why, what to watch next week, suggestions and cautions. |
-| **Malaysia headlines** | 09:00 / 14:00 / 21:00 daily | A tiered index of general Malaysian news (politics, economy, policy, incidents…). Reply "more politics" for the full list. |
-| **Chat Q&A** | Any time | "What do I hold?", "I bought IJM", "watch Inari", "move the digest to 7pm", "anything new on Gamuda?" |
+| ⚡ **Instant alert** | Every 30 min, 08:00–18:30, Mon–Fri. Silent if nothing is new. | News or a Bursa announcement naming a stock you hold (or watch, marked 👀): sentiment, a 1–2 line summary, why it matters, the link and today's price. |
+| 🌆 **Evening digest** | 18:30 Mon–Fri. Skipped if empty. | Sector and market news for the industries you hold (policy, commodities, contract flow, the Budget…), with the stocks each item touches. |
+| 📅 **Weekly review** | Friday 20:00 | Each holding's week against the FBM KLCI, what moved and why, what to watch next week, suggestions and cautions. |
+| 🗞️ **Malaysia headlines** | 09:00 / 14:00 / 21:00 | A tiered index of general Malaysian news. Reply "more politics" for the full list. |
 
-The times shown are the defaults. You choose which of these you get, and when, during setup.
-
-Optional extras: an LSS6 (Large Scale Solar) tender-result watcher, a token-cost ledger, and a
-local web dashboard.
+- **Guided setup**, in the terminal or by sending `/setup` to your bot: search stocks by name
+  or code, add a watchlist, pick your chat app, and choose which messages arrive when.
+- **Chat with it:** "I bought KPJ", "watch Inari", "move the digest to 7pm", "anything new on
+  Gamuda?". Answers come from what the jobs already collected, so chat stays cheap.
+- **Trustworthy links:** models write the words, but code fills in every URL, time and price from
+  the stored item, so a headline can't point at the wrong article.
+- **Cheap to run:** matching is plain code, and a model only sees news that already concerns you.
+  See [the FAQ](#faq) for real costs.
+- **Extras:** a local read-only dashboard, a cost ledger, a chat model router (Opus for hard
+  questions, Sonnet for easy ones) and an LSS6 tender watcher.
 
 ## How it works
 
-```
- sources (no LLM)                 filter (code first)               write             deliver
-┌───────────────────────┐   ┌───────────────────────────┐   ┌────────────────┐   ┌──────────────┐
-│ KLSE Screener news    │   │ alias / keyword match     │   │ briefer        │   │ Hermes cron  │
-│ Bursa announcements   │──▶│ dedup (title + URL + DB)  │──▶│ digest writer  │──▶│ → Telegram / │
-│ Google News RSS       │   │ relevance judge (Haiku)   │   │ editor         │   │   Discord /  │
-│ The Edge, Star, RSS…  │   │  for what the rules miss  │   │ renderer(code) │   │   Feishu …   │
-│ Yahoo prices          │   └───────────────────────────┘   └────────────────┘   └──────────────┘
-└───────────────────────┘                │
-                                         ▼
-                            data/state/news.db  (SQLite memory: seen items,
-                            pending queue, delivered stories, notes, URL cache)
+```mermaid
+flowchart LR
+    S["<b>News sources</b><br/>KLSE Screener · Bursa filings<br/>Google News · The Edge · The Star<br/>Yahoo prices<br/><i>plain HTTP, no AI</i>"]
+    S --> M["Match & dedupe<br/>aliases + sector keywords"]
+    M -->|unclear items| J["Relevance judge<br/>Claude Haiku"]
+    M --> DB[("news.db")]
+    J --> DB
+    DB --> W["Writers<br/>Claude Sonnet / Opus<br/>JSON verdicts"]
+    W --> R["Renderer (code)<br/>links · times · prices"]
+    R --> H["Hermes cron<br/>+ gateway"]
+    H --> C["Your chat app"]
 ```
 
-- **Fetching and matching are plain Python.** No tokens are spent to decide whether an item
-  mentions a holding. A cheap model (Haiku) looks only at items the keyword rules couldn't place.
+- **Fetching and matching are plain Python.** No tokens go into deciding whether an item mentions
+  a stock. A cheap model (Haiku) looks only at items the keyword rules couldn't place.
 - **Models write words, code writes facts.** Agents return JSON verdicts keyed by item id. The
-  deterministic renderer (`agents/renderer.py`) fills in links, times and prices from stored
-  data, so a model can never attach the wrong article to a headline.
+  renderer (`agents/renderer.py`) fills in links, times and prices from stored data.
 - **Nothing is lost on a crash.** An item leaves the queue only after its message has been
   written, and the next run picks up anything left pending.
-- **Hermes does the scheduling and delivery.** Each job is a Hermes cron job running a small
-  wrapper script. Most jobs are `--no-agent`: the script's stdout *is* the message, and empty
-  stdout means nothing is sent.
+- **Hermes does scheduling and delivery.** Each message type is a
+  [Hermes Agent](https://github.com/NousResearch/hermes-agent) cron job running a small wrapper
+  script. The script's output is the message; empty output means nothing is sent.
 
 ## Quick install
 
@@ -64,11 +88,20 @@ On Linux, macOS or Windows (in WSL2), run:
 curl -fsSL https://raw.githubusercontent.com/hanzong111/Personal-News-Agent/main/bootstrap.sh | bash
 ```
 
-This installs everything that's missing and walks you through setup (details below). It asks
-before it uses `sudo` or changes a system setting, and it's safe to run again. Nothing is repeated
-or duplicated.
+This installs everything that's missing and walks you through setup. It's safe to run again:
+finished steps are skipped and nothing is duplicated. What it touches:
 
-If you'd rather read the script before running it:
+- **Asks first:** installing system packages with `sudo`, changing the time zone, and installing
+  the Hermes gateway as a user service (systemd or launchd).
+- **Writes:** the project folder (default `~/Personal-News-Agent`), Hermes Agent in `~/.hermes`
+  (via [its official installer](https://hermes-agent.nousresearch.com)), and this project's
+  wrapper scripts and chat skills in `~/.hermes/scripts` and `~/.hermes/skills`.
+- **Downloads from:** GitHub (this repo), the Hermes installer site, your Linux distribution or
+  Homebrew, and PyPI.
+- **Never:** edits your shell profile itself (the Hermes installer may add `~/.local/bin` to your
+  PATH), or runs anything as root without asking.
+
+**Prefer not to pipe to bash?** Clone it, read the script, then run it:
 
 ```bash
 git clone https://github.com/hanzong111/Personal-News-Agent.git
@@ -352,7 +385,8 @@ pipeline/           fetch → match → memory → render; one module per cron j
   dashboard/          read-only web console
 agents/             single-purpose LLM roles (JSON in, JSON out) + llm.py backend
 hermes/             everything that gets installed into ~/.hermes
-  install.sh          venv, portfolio, wrappers, skills, plugin
+  install.sh          venv, wrappers, skills, plugin into ~/.hermes
+  uninstall.sh        removes all of the above (and this project's cron jobs)
   scripts/            cron wrapper scripts (templated project path)
   skills/             chat skills: bursa-setup, bursa-portfolio, malaysia-news
   plugins/            model-router
@@ -362,33 +396,100 @@ data/
   preferences.yaml         written by setup (gitignored)
   sectors.yaml             sector library: themes, news queries, industry matching
   state/, logs/            runtime, gitignored
-docs/               research notes and the design plan
+docs/               research notes, the design plan, README images
+.github/            CI (tests on Python 3.10–3.12, shellcheck), issue and PR templates
 tests/              pytest suite
 ```
 
-## Development
+## Updating
+
+```bash
+cd ~/Personal-News-Agent
+./bootstrap.sh          # pulls the latest code and refreshes the copies in ~/.hermes
+```
+
+Or by hand: `git pull && ./hermes/install.sh --force`. Replaced files are kept as `*.bak`. Your
+stocks, preferences and news history in `data/` are never touched by an update. See
+[CHANGELOG.md](CHANGELOG.md) for what changed.
+
+## Uninstalling
+
+```bash
+./hermes/uninstall.sh   # removes this project's cron jobs, scripts, skills and plugin from ~/.hermes
+rm -rf ~/Personal-News-Agent
+```
+
+Hermes Agent itself stays installed. Remove it with its own uninstaller if you don't use it for
+anything else.
+
+## FAQ
+
+**What does it cost to run?** On the author's install (6 holdings, every message type on), the
+scheduled messages cost about **US$0.45 a day, roughly $13.50 a month** at Anthropic's list prices.
+Chat questions cost about $0.08 each. The Malaysia headline index is over half of the scheduled
+cost, so switch it off (`setup set headlines=off`) if you only want stock news. With a Claude
+subscription login instead of an API key there's no per-token bill. Check your own numbers with
+`python -m pipeline.costs report`.
+
+**Can I use another AI model?** The agents are written and tuned for Claude (Haiku, Sonnet, Opus).
+Calls go through Hermes, so a different provider may work if you change the model names in
+`agents/llm.py`, but it isn't tested.
+
+**Does it work for other markets?** Not yet. Stock codes, the KLCI benchmark, MYR prices, the time
+zone and the news sources are specific to Bursa Malaysia. The design would carry over, and
+adapters for other markets are welcome.
+
+**How fast are alerts?** Within 30 minutes of a story appearing on a source, during the alert
+hours you chose. Bursa announcements carry a date only, so they sort after same-day news.
+
+**Why did I get an old story when I added a stock?** A stock added after setup gets a one-off
+catch-up of the last 3 days of its news. After that, only new stories alert.
+
+**Why didn't I get an alert?** Run `python -m pipeline.log runs -n 10`, then
+`python -m pipeline.log show <run>`. The `gate` line shows what matched and what was dropped. The
+most common cause is an alias that doesn't match how headlines name the company. Add one to
+`data/portfolio.yaml`.
+
+**The laptop was asleep. Did I miss messages?** Missed jobs run when it wakes (Hermes'
+`cron.catch_up_missed`, on by default). A late run delivers
+at once instead of waiting for its usual time, and scans only alert on stories not yet sent.
+
+## Disclaimer
+
+- **Not financial advice.** Messages are automated summaries for your own research. They can be
+  late, incomplete or wrong. Verify with the original source or Bursa Malaysia's announcements
+  before you make a decision.
+- **AI can make mistakes.** Summaries, sentiment and "why it matters" lines are written by
+  language models, which can misread or leave things out. Links, times and prices come from the
+  stored items, not from the model.
+- **News sources and their terms.** This tool reads public listing pages, RSS feeds and APIs. Some
+  of these sites restrict automated access or reuse in their terms of service. For example,
+  KLSE Screener's terms prohibit robots and crawlers, and The Edge's terms forbid building a
+  database from their content or using it commercially. You're responsible for how you use it.
+  It's meant for personal, non-commercial use at a polite rate. It honours KLSE Screener's
+  `robots.txt` crawl delay and never scrapes article bodies for alerts. Remove any source you're
+  not comfortable using.
+- **Your data.** Headlines and your stock list are sent to Anthropic (the AI provider) and your
+  chat app provider. Searches naming your stocks go to Google News and Yahoo Finance. Your API keys stay in `~/.hermes/.env`, and your portfolio, preferences and
+  history stay on your machine.
+- **No warranty.** The software is provided as is, under the [MIT License](LICENSE).
+
+## Contributing
+
+Bug reports, sector improvements and new sources are welcome. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the development setup and ground rules, and
+[SECURITY.md](SECURITY.md) to report a vulnerability privately.
 
 ```bash
 ./.venv/bin/python -m pip install -r requirements-dev.txt
-./.venv/bin/python -m pytest -q
+./.venv/bin/python -m pytest -q      # no network, no API keys, no Hermes needed
 ```
 
-The tests use fakes and temp databases. They don't hit the network, call a model or touch
-your Hermes install.
+## License and credits
 
-## Notes and limits
+[MIT](LICENSE) © 2026 hanzong111.
 
-- **Scraping etiquette.** Sources are public listing pages and RSS feeds. Article bodies are
-  never scraped for alerts. KLSE Screener's crawl delay is honoured. Keep the scan interval
-  reasonable.
-- **Sources change.** Site layouts and APIs (especially Bursa's) change without notice. `bursa-ops`
-  posts a warning when a source starts failing.
-- **Malaysia-specific.** Market, currency (MYR), time zone and news sources are hard-wired for
-  Bursa Malaysia.
-- **Cost.** Most runs are no-agent and spend nothing when there's no news. Typical spend is a
-  few model calls per alert plus one per digest and weekly review. Check
-  `pipeline.costs report` for your actual numbers.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+Built on [Hermes Agent](https://github.com/NousResearch/hermes-agent) by Nous Research, with
+[Claude](https://www.anthropic.com/claude) models by Anthropic. Market data comes from Yahoo
+Finance, KLSE Screener and Bursa Malaysia. News comes from the outlets linked in each message.
+This project isn't affiliated with any of them.

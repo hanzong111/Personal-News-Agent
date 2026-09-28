@@ -1,0 +1,51 @@
+name: Bug report
+description: Something broke, a message didn't arrive, or the installer failed.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Remove anything personal before posting**: stock lists, chat IDs, API keys, bot tokens.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: Setup status
+      description: Output of `./.venv/bin/python -m pipeline.setup status` (edit out your stocks if you prefer).
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Recent warnings
+      description: Output of `./.venv/bin/python -m pipeline.log tail --level WARN -n 30`, or the installer output if bootstrap failed.
+      render: text
+  - type: input
+    id: os
+    attributes:
+      label: System
+      placeholder: e.g. Ubuntu 24.04 / macOS 15 / Windows 11 + WSL2 Ubuntu
+    validations:
+      required: true
+  - type: input
+    id: hermes
+    attributes:
+      label: Hermes version
+      description: Output of `hermes --version`
+  - type: dropdown
+    id: app
+    attributes:
+      label: Chat app
+      options: [Telegram, Discord, Slack, WhatsApp, Signal, Feishu / Lark, WeChat, Other]
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Before posting
+      options:
+        - label: I removed API keys, bot tokens, chat IDs and anything else I don't want public.
+          required: true

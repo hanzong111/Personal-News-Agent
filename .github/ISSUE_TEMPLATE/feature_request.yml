@@ -1,0 +1,18 @@
+name: Feature or source request
+description: Suggest a feature, a news source, or a sector to cover.
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [New feature, New news source, New or better sector, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What and why
+      description: What you'd like, and the problem it solves for you. For a source, include its URL and whether it has RSS or an API.
+    validations:
+      required: true

@@ -23,7 +23,7 @@ set -euo pipefail
 
 REPO_URL="https://github.com/hanzong111/Personal-News-Agent.git"
 DIR="${HOME}/Personal-News-Agent"
-YES=0; DELIVER=""; ROUTER=""; SKIP_HERMES_SETUP=0
+YES=0; DELIVER=""; ROUTER=""; SKIP_HERMES_SETUP=0; REFRESH=""
 MIN_PY="3.10"
 
 while [ $# -gt 0 ]; do
@@ -131,7 +131,10 @@ if [ -n "$HERE" ] && [ -f "$HERE/hermes/install.sh" ] && [ -f "$HERE/pipeline/se
   DIR="$HERE"
   ok "using this checkout: $DIR"
 elif [ -d "$DIR/.git" ]; then
+  before="$(git -C "$DIR" rev-parse HEAD)"
   git -C "$DIR" pull --ff-only --quiet && ok "updated $DIR" || warn "could not update $DIR (local changes?) — using it as is"
+  # New code → refresh the copies in ~/.hermes too (old ones are kept as *.bak)
+  [ "$(git -C "$DIR" rev-parse HEAD)" != "$before" ] && REFRESH="--force"
 else
   git clone --quiet "$REPO_URL" "$DIR" && ok "cloned into $DIR"
 fi
@@ -177,7 +180,7 @@ if [ ! -x .venv/bin/python ]; then
   fi
   ok "created .venv ($(.venv/bin/python -c 'import sys;print("Python %d.%d"%sys.version_info[:2])'))"
 fi
-./hermes/install.sh $ROUTER
+./hermes/install.sh ${REFRESH:-} $ROUTER
 
 # ---------------------------------------------------------------- 6. time zone
 bold "6/8 Time zone"
