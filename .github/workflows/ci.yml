@@ -19,6 +19,26 @@ jobs:
           echo "::error::Pull requests go to 'develop', not 'main'. Change the base branch to develop (Edit next to the PR title)."
           exit 1
 
+  # Releases: a develop -> main PR must carry a new, higher VERSION with a CHANGELOG section.
+  version:
+    name: Release version
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: |
+          new="$(cat VERSION)"
+          old="$(git show origin/main:VERSION 2>/dev/null || echo 0.0.0)"
+          echo "main is $old, this PR releases $new"
+          [[ "$new" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::VERSION must be X.Y.Z, got '$new'"; exit 1; }
+          if [ "$new" = "$old" ] || [ "$(printf '%s\n%s\n' "$old" "$new" | sort -V | tail -1)" != "$new" ]; then
+            echo "::error::Bump VERSION above $old first: python scripts/bump_version.py patch|minor|major"; exit 1
+          fi
+          grep -q "^## \[$new\]" CHANGELOG.md || { echo "::error::CHANGELOG.md needs a '## [$new]' section"; exit 1; }
+          if git rev-parse -q --verify "refs/tags/v$new" >/dev/null; then echo "::error::Tag v$new already exists"; exit 1; fi
+
   tests:
     name: Tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest

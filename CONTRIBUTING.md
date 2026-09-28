@@ -34,6 +34,32 @@ Pull requests into `main` are closed or retargeted, and CI fails them unless the
 `develop`. If you fork, branch from your fork's `develop` and open the PR against this repo's
 `develop`.
 
+## Versioning and releases
+
+Versions follow [Semantic Versioning](https://semver.org/). The current one is in `VERSION`, and
+`python -m pipeline.setup --version` prints it.
+
+| Change | Bump | Example |
+|---|---|---|
+| Breaks something users rely on: the `portfolio.yaml` / `preferences.yaml` format, a command, the install | **major** | 1.4.2 → 2.0.0 |
+| New feature (`feature/…` branches) | **minor** | 1.4.2 → 1.5.0 |
+| Bug fix, docs, dependencies (`fix/…`, `docs/…`) | **patch** | 1.4.2 → 1.4.3 |
+
+Contributors don't bump `VERSION`. Add a line under **Unreleased** in `CHANGELOG.md` instead. The
+maintainer cuts releases:
+
+```bash
+git switch develop && git pull
+git switch -c release/1.1.0
+python scripts/bump_version.py minor      # VERSION + CHANGELOG: Unreleased → [1.1.0] - date
+git commit -am "chore: release 1.1.0"
+# merge release/1.1.0 into develop, then open a pull request develop → main
+```
+
+CI checks that pull request: `VERSION` must be higher than `main`'s, `CHANGELOG.md` must have
+its section, and the tag must not exist yet. After the merge into `main`, the **Release**
+workflow tags `v1.1.0` and publishes a GitHub Release with that CHANGELOG section as notes.
+
 ## Development setup
 
 ```bash
