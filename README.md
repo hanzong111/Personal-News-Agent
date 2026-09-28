@@ -98,7 +98,7 @@ one week of real news ([full benchmark](docs/benchmarks/jev.md)):
 | | Built-in rules | With Jev |
 |---|---|---|
 | Duplicate alerts delivered in 8 days | 3 (one story alerted 3 times) | 0 in replay |
-| Repeat pairs found, stock news | 56 | 173 (+128 missed, 11 false merges fixed) |
+| Repeat pairs found, stock news | 56 | 173 (+128 the rule missed) |
 | Malaysia headlines grouped into stories | 120 → 102 | 120 → 75 (incl. English ↔ Malay) |
 | Broker calls and stock lists treated as company news | 16 of 94 | 0 (confidence ≥ 0.7) |
 | Stories typed as "other" | 189 of 256 | 61 of 256 |
