@@ -126,7 +126,10 @@ def render_alert(cfg, items: list[dict], verdicts: dict[str, dict], prices: dict
             v = verdicts[i["id"]]
             emo = f"{TYPE_EMOJI.get(v['type'], TYPE_EMOJI['other'])} {'⚠️' if v['risk'] else ''}{SENT3[v['sentiment']]}"
             when = i["published"][:16].replace("T", " ")
-            out += [f"{emo} **{v['headline']}**", f"🕒 {when}"]
+            out += [f"{emo} **{v['headline']}**"]
+            if i.get("update_of"):
+                out.append(f"🔄 Update on: {i['update_of'][:90]}")
+            out.append(f"🕒 {when}")
             if v["summary"]:
                 out.append(v["summary"])
             if v["why"]:

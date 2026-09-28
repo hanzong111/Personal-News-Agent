@@ -59,10 +59,16 @@ Sustainable Organisation Bronze Award" (contract → other).
 
 | Step | With Jev | Without Jev, or when a call fails |
 |---|---|---|
-| Alert scan: repeats | Same event as a recent alert or an earlier item in the batch? | Word overlap ≥ 0.5 |
+| Alert scan: repeats and updates | Two questions per pair: same story? something happened after the earlier report? Same + nothing new = repeat (dropped); same + new = update (alerts, marked 🔄). Compared with the past week's alerts and earlier items in the batch | Word overlap ≥ 0.5 |
 | Alert scan: relevance | Stock only quoted or listed (confidence ≥ 0.7) → evening digest | Attribution regexes |
 | Malaysia headlines: clustering | Jev judges candidate pairs (up to 400 a run) | Shared rare words or overlap ≥ 0.45 |
 | Curator: story type fallback | Jev story type | Keyword rules |
+
+The repeat numbers above were measured with an earlier single "same event?" score. That version
+also treated a deal reaching a new stage (signed, completed) as a repeat. The live check now asks
+the two questions separately. Re-scored on the same 173 repeat pairs: 149 are still dropped, 22 now
+alert as updates (mostly real developments such as a trial moving from "test" to "completed"), and
+2 are no longer judged the same story.
 
 Each answer falls back to the original rule for just that input, so a partial outage degrades gracefully.
 In daily use Jev costs about **US$1 a month**, most of it for the three headline editions.
