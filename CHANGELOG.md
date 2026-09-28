@@ -12,6 +12,11 @@ All notable changes to this project are listed here. The format follows
   rules can't. Choose it in setup step 5 or with `setup set jev=on`; the built-in rules stay the
   default and the fallback. Benchmark in `docs/benchmarks/jev.md`, scripts in `benchmarks/jev/`.
 
+### Fixed
+- Jev mode no longer treats a deal reaching a new stage (agreement signed, deal completed, approval,
+  delay, value change, charges filed) as a repeat, so those updates still alert. Tested on 11 cases
+  (10/10 correct) and re-scored against the 173 benchmark repeats (164 still caught).
+
 ### Changed
 - Renamed to **TickerPigeon**, with a new logo, the mascot Pip, a README banner and a dashboard
   favicon (assets in `docs/brand/`). The repository moves to `hanzong111/TickerPigeon`, and the
